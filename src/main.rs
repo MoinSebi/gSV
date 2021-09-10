@@ -20,10 +20,20 @@ fn main() {
             .about("Sets the input file to use")
             .takes_value(true)
             .default_value("/home/svorbrugg_local/Rust/data/AAA_AAB.cat.gfa"))
+        .arg(Arg::new("output")
+            .short('o')
+            .long("output")
+            .about("Output prefix")
+            .takes_value(true)
+            .default_value("panSV.output"))
+
         .get_matches();
 
     // removed .default stuff
     let _input = matches.value_of("gfa2").unwrap();
+    let _output: &str = matches.value_of("output").unwrap();
+
+
 
     let mut g1;
     if matches.is_present("gfa2"){
@@ -33,6 +43,14 @@ fn main() {
         let g2 = "/home/svorbrugg_local/local_compile/panSV/graphs/openGraph.gfa";
         let g3 = "/home/svorbrugg_local/Rust/data/AAA_AAB.cat.gfa";
         let g4 = "/home/svorbrugg_local/chr1.wfmash.n20.a90.s10000.p1,19,39,3,81,1.seqwish.sort.smooth.sort.gfa";
+    }
+
+
+    let mut outpre;
+    if matches.is_present("output"){
+        outpre = matches.value_of("output").unwrap();
+    } else {
+        outpre = "panSV.out"
     }
 
     let mut graph: Gfa = Gfa::new();
@@ -52,8 +70,8 @@ fn main() {
     //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
     indel_detection(& mut gg, &graph.paths, 100000);
 
-    naming_wrapper(& gg.id2bubble, &(4));
-    bed(& gg, &h,&m);
+    naming_wrapper(& gg.id2bubble, &(graph.paths.len() as u32), outpre);
+    bed(& gg, &h,&m, outpre);
 
 
 
