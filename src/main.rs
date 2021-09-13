@@ -1,25 +1,28 @@
 
 
 mod core;
+#[allow(non_snake_case)]
 mod panSV;
 use gfaR::{Gfa};
-use crate::core::counting::{counting_nodes, count_node};
-use crate::panSV::algo::{algo_panSV, createBubbles, mapper1, indel_detection, bed};
+use crate::core::counting::{counting_nodes, CountNode};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, writing_bed};
 use crate::core::graph_helper::graph2pos;
 use crate::core::core::{naming_wrapper};
 use clap::{Arg, App};
+use std::path::Path;
+use std::process;
+
 
 fn main() {
     let matches = App::new("panSV")
         .version("0.1.0")
         .author("Sebastian V")
         .about("Bubble detection")
-        .arg(Arg::new("gfa2")
+        .arg(Arg::new("gfa")
             .short('g')
             .long("gfa")
-            .about("Sets the input file to use")
-            .takes_value(true)
-            .default_value("/home/svorbrugg_local/Rust/data/AAA_AAB.cat.gfa"))
+            .about("Input GFA file")
+            .takes_value(true))
         .arg(Arg::new("output")
             .short('o')
             .long("output")
@@ -29,24 +32,26 @@ fn main() {
 
         .get_matches();
 
-    // removed .default stuff
-    let _input = matches.value_of("gfa2").unwrap();
-    let _output: &str = matches.value_of("output").unwrap();
 
 
 
-    let mut g1;
-    if matches.is_present("gfa2"){
-        g1 = matches.value_of("gfa2").unwrap();
+    let g1;
+    if matches.is_present("gfa") {
+        if Path::new(matches.value_of("gfa").unwrap()).exists() {
+            g1 = matches.value_of("gfa").unwrap();
+        } else {
+            eprintln!("No input gfa file");
+            process::exit(0x0100);
+        }
+
     } else {
-        g1 = "/home/svorbrugg_local/local_compile/panSV/graphs/testGraph.gfa";
-        let g2 = "/home/svorbrugg_local/local_compile/panSV/graphs/openGraph.gfa";
-        let g3 = "/home/svorbrugg_local/Rust/data/AAA_AAB.cat.gfa";
-        let g4 = "/home/svorbrugg_local/chr1.wfmash.n20.a90.s10000.p1,19,39,3,81,1.seqwish.sort.smooth.sort.gfa";
+        eprintln!("No input gfa file");
+        process::exit(0x0100);
     }
 
 
-    let mut outpre;
+
+    let outpre;
     if matches.is_present("output"){
         outpre = matches.value_of("output").unwrap();
     } else {
@@ -58,25 +63,29 @@ fn main() {
 
     // Counting nodes
     println!("Counting");
-    let gg: count_node = counting_nodes(&graph);
-    let h = graph2pos(&graph);
+    let gg: CountNode = counting_nodes(&graph);
 
-    println!("Number of nodes: {}", gg.ncount.len());
+
+
+    println!("PanSV running");
     let (o,m) = algo_panSV(&graph.paths, &gg);
-    let k = mapper1(&o);
-
-
-    let mut gg = createBubbles(&o, &graph.paths, &h);
+    let h = graph2pos(&graph);
+    println!("Creating bubbbles");
+    let mut gg = create_bubbles(&o, &graph.paths, &h);
     //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
-    indel_detection(& mut gg, &graph.paths, 100000);
 
+    println!("Indel detection");
+    indel_detection(& mut gg, &graph.paths, o.len() as u32);
+
+
+    println!("Writing bed");
     naming_wrapper(& gg.id2bubble, &(graph.paths.len() as u32), outpre);
-    bed(& gg, &h,&m, outpre);
+    println!("Writing stats");
+    writing_bed(& gg, &h, &m, outpre);
 
 
+}
 
-
-
-
-
+fn running(){
+    println!("Jdkjasdhsakjd");
 }

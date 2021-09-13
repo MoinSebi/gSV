@@ -1,7 +1,7 @@
 use std::collections::{HashMap};
 use gfaR::{Path};
-use crate::core::counting::count_node;
-use crate::panSV::panSV_core::{PanSVpos, Tmp_pos, bubble_wrapper};
+use crate::core::counting::CountNode;
+use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper};
 use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
 use std::fs::File;
@@ -10,28 +10,27 @@ use std::io::{Write, BufWriter};
 
 
 /// New starters, always from 0!!! Ending strategy
-pub fn newStarter(j: usize, s: &String) -> Vec<Tmp_pos> {
-    let mut opentrans:  Vec<Tmp_pos> = Vec::new();
+pub fn new_starter(j: usize, s: &String) -> Vec<TmpPos> {
+    let mut opentrans:  Vec<TmpPos> = Vec::new();
     for x in 2..j+1{
-        opentrans.push(Tmp_pos {acc: s.to_owned(), start: 0, core: x as u32, border: true});
+        opentrans.push(TmpPos {acc: s.to_owned(), start: 0, core: x as u32, border: true});
     }
-    println!("Opentrans Len: {}", j);
     opentrans
 
 }
 
+
+#[allow(non_snake_case)]
 /// PanSV algorithm
 ///
 /// Input: paths, counts
 /// Output: HM(String -> Vec<pos>)
 /// panSVpos: index, index, core
 ///
-///
-pub fn algo_panSV(paths: & Vec<Path>, counts: &count_node) -> (HashMap<String, Vec<PanSVpos>>, HashMap<String, usize>) {
+pub fn algo_panSV(paths: & Vec<Path>, counts: &CountNode) -> (HashMap<String, Vec<PanSVpos>>, HashMap<String, usize>) {
 
-    println!("panSV algorithm running");
-
-    let mut lastcore: u32 = 0;
+    let mut lastcore: u32;
+    #[allow(non_snake_case)]
     let mut result_panSV: HashMap<String, Vec<PanSVpos>> = HashMap::new();
 
     let mut max_index: HashMap<String, usize> = HashMap::new();
@@ -49,14 +48,14 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &count_node) -> (HashMap<String, V
         lastcore = 1;
 
         // All "open" intervals
-        let mut interval_open:  Vec<Tmp_pos> = newStarter(paths.len(), &x.name);
+        let mut interval_open:  Vec<TmpPos> = new_starter(paths.len(), &x.name);
 
         println!("Path name: {}", x.name);
         // Iterate over all nodes
         for (index, node) in x.nodes.iter().enumerate() {
             // if core is smaller than before -> open new bubble
             if counts.ncount[node] < lastcore {
-                interval_open.push(Tmp_pos { acc: x.name.clone(), start: (index - 1) as u32, core: lastcore, border: false});
+                interval_open.insert(0, TmpPos { acc: x.name.clone(), start: (index - 1) as u32, core: lastcore, border: false});
                 lastcore = counts.ncount[node];
             }
             // If bigger -> close bubble
@@ -76,6 +75,8 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &count_node) -> (HashMap<String, V
                     if o_trans.core == counts.ncount[node] {
                         trig = true;
                     }
+
+
                     // If one open_interval has smaller (or same) core level -> close
                     if o_trans.core <= counts.ncount[node] {
                         // why this?
@@ -84,6 +85,9 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &count_node) -> (HashMap<String, V
 
                         }
                         remove_list.push(index_open);
+                    }
+                    if o_trans.core >= counts.ncount[node] {
+                        break;
                     }
                 }
                 // Remove stuff from the interval_open list
@@ -108,20 +112,19 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &count_node) -> (HashMap<String, V
         }
 
     }
-    let result_result = sortTrav(clean_borders(result_panSV, &max_index));
+    let result_result = sort_trav(clean_borders(result_panSV, &max_index));
 
 (result_result, max_index)
 }
 
 
 
-/// Why is this implemented?
+/// Remove non unique borders
 ///
 ///
 ///
 ///
 pub fn clean_borders(old_result: HashMap<String, Vec<PanSVpos>>, max_index: &HashMap<String, usize>) -> HashMap<String, Vec<PanSVpos>> {
-    println!("Cleaning borders");
     // New result
     let mut new_result:  HashMap<String, Vec<PanSVpos>> = HashMap::new();
 
@@ -158,9 +161,8 @@ pub fn clean_borders(old_result: HashMap<String, Vec<PanSVpos>>, max_index: &Has
             }
 
         }
-        let mut max1 = (0, false);
         for (k22,v22) in starts.iter(){
-            max1 = (0, false);
+            let mut max1: (u32, bool) =  (0, false);
             for (x,y) in  v22.iter(){
                 if x > &max1.0{
                     max1 = (x.clone(), y.clone());
@@ -209,7 +211,7 @@ pub fn clean_borders(old_result: HashMap<String, Vec<PanSVpos>>, max_index: &Has
 /// Sorting vector in hashmaps
 ///
 /// smallest a into biggest b
-pub fn sortTrav(result:  HashMap<String, Vec<PanSVpos>>) -> HashMap<String, Vec<PanSVpos>>{
+pub fn sort_trav(result:  HashMap<String, Vec<PanSVpos>>) -> HashMap<String, Vec<PanSVpos>>{
 
     let mut new_result: HashMap<String, Vec<PanSVpos>> = HashMap::new();
 
@@ -228,41 +230,27 @@ pub fn sortTrav(result:  HashMap<String, Vec<PanSVpos>>) -> HashMap<String, Vec<
 }
 
 
-/// helper1
-pub fn mapper1(inp: & HashMap<String, Vec<PanSVpos>>) -> HashMap<u32, &PanSVpos>{
-    println!("Helper 1 running");
-    let mut result_new : HashMap<u32, &PanSVpos>  = HashMap::new();
 
-    for (k,v) in inp.iter(){
-        for (i, x) in v.iter().enumerate(){
-            result_new.insert(i as u32, x);
-        }
-    }
-    result_new
-}
 
 
 
 /// We make bubbles *_* lets go!
 ///
 ///
-pub fn createBubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   Vec<Path>, ghm: &'b HashMap<String, Vec<usize>>) -> bubble_wrapper<'a>{
-    println!("\nCreating bubbles");
+pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   Vec<Path>, ghm: &'b HashMap<String, Vec<usize>>) -> BubbleWrapper<'a>{
 
-
-    let mut result: bubble_wrapper = bubble_wrapper::new();
+    let mut result: BubbleWrapper = BubbleWrapper::new();
 
     let mut tcount = 0;
     let mut bcount = 0;
 
     for x in p{
-        for (index, pos) in inp[&x.name].iter().enumerate(){
+        for pos in inp[&x.name].iter(){
 
             let newbub = (& x.nodes[pos.start as usize], & x.nodes[pos.end as usize]);
+            let len_trav: usize  = ghm.get(&x.name).unwrap()[pos.end as usize] -  ghm.get(&x.name).unwrap()[pos.start as usize];
 
-            let tt = Traversal{length: 10, pos: vec![tcount]};
-
-            let trav: (usize, usize) = (ghm.get(&x.name).unwrap()[pos.start as usize], ghm.get(&x.name).unwrap()[pos.end as usize]);
+            let tt = Traversal{length: len_trav as u32, pos: vec![tcount]};
 
             /*
             If we have the bubble
@@ -288,7 +276,7 @@ pub fn createBubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   V
 
                 // Check if traversal already there
                 if bub.traversals.contains_key(&k){
-                    result.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k).unwrap().addPos(tcount);
+                    result.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k).unwrap().add_pos(tcount);
                     //pV.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k).unwrap().addPos(tcount);
                 }
                 else {
@@ -317,7 +305,6 @@ pub fn createBubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   V
 
                  please save how to make vector -> Btree
                  */
-                let tt = Traversal{length: 10, pos: vec![tcount]};
                 // Make traversal
                 let k: Vec<String> = x.nodes[(pos.start+1)  as usize..pos.end as usize].iter().cloned().collect();
 
@@ -343,33 +330,19 @@ pub fn createBubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   V
         }
 
     }
-    testing_lib(inp, & mut result);
+    // Connect bubbles
+    connect_bubbles_wrapper(inp, & mut result);
 
-
-
-    // also 4010, 0
-    // for (k,v) in result.id2bubble.get(&4010).unwrap().traversals.iter(){
-    //     for x in v.pos.iter(){
-    //         println!("HIT {:?}", result.id2interval.get(&x));
-    //     }
-    // }
-    // for (k,v) in result.id2bubble.get(&0).unwrap().traversals.iter(){
-    //     for x in v.pos.iter(){
-    //         println!("HIT {:?}", result.id2interval.get(&x));
-    //     }
-    // }
-    //println!("{:?}", result.id2bubble.get(&4179).unwrap().traversals); //4774
-    //println!("{:?}", result.id2bubble.get(&867).unwrap().traversals); // 867
-
-    //println!("{:?}", result.id2interval.get(&867)); //{ from: 0, to: 10464, acc: "AAA_6.ChrII" }
-    //println!("{:?}", result.id2interval.get(&4774)); //{ from: 0, to: 13634, acc: "AAB_6.ChrII" }
-
-    //naming_wrapper(&pV.id2bubble, & (p.len() as u32));
     result
 
 }
 
-pub fn indel_detection<'a>(r: & mut bubble_wrapper<'a>,paths: &'a Vec<Path>, last_id: u32){
+/// Indel detection
+///
+/// Iterate over nodes in path
+/// If two nodes after each othera are borders of bubbles
+/// Add traversal to bubble
+pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<Path>, last_id: u32){
     let mut ll = last_id.clone() + 1;
 
     for path in paths.iter(){
@@ -377,34 +350,35 @@ pub fn indel_detection<'a>(r: & mut bubble_wrapper<'a>,paths: &'a Vec<Path>, las
             let ind = (&path.nodes[x], &path.nodes[x+1]);
             if r.anchor2bubble.contains_key(&ind){
 
-                let k: Vec<String> = vec![];
-                let jo: Traversal = Traversal::new(10, ll );
                 let bub =  r.id2bubble.get_mut(r.anchor2bubble.get(&ind).unwrap()).unwrap();
-                let name =  &path.name;
-                r.id2interval.insert(ll, Posindex {from: (x as u32), to: ((x+1) as u32), acc: path.name.clone(), border: false});
-                r.id2id.insert(((x as u32), ((x+1) as u32), & path.name), bub.id.clone());
-                if bub.traversals.contains_key(&k){
-                    bub.traversals.get_mut(&k).unwrap().pos.push(ll);
+                if ! bub.all_acc(& r.id2interval).contains(& path.name) {
+                    let k: Vec<String> = vec![];
+                    let jo: Traversal = Traversal::new(ll, 0);
+                    r.id2interval.insert(ll, Posindex {from: (x as u32), to: ((x+1) as u32), acc: path.name.clone(), border: false});
+                    r.id2id.insert(((x as u32), ((x+1) as u32), & path.name), bub.id.clone());
+                    if bub.traversals.contains_key(&k){
+                        bub.traversals.get_mut(&k).unwrap().pos.push(ll);
 
 
+                    }
+                    else{
+                        bub.traversals.insert(k.clone(), jo);
+                        bub.traversals.get_mut(&k).unwrap().pos.push(ll);
+                    }
+                    ll += 1;
                 }
-                else{
-                    bub.traversals.insert(k.clone(), jo);
-                    bub.traversals.get_mut(&k).unwrap().pos.push(ll);
-                }
-                ll += 1;
 
             }
         }
     }
 }
 
-pub fn bed(r: & bubble_wrapper, index2: & HashMap<String, Vec<usize>>, max_index: &HashMap<String, usize>, out: &str){
+pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, max_index: &HashMap<String, usize>, out: &str){
 
     let f = File::create([out, "bed"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
 
-    for (k,v) in r.id2interval.iter() {
+    for (_k,v) in r.id2interval.iter() {
         let mut from_id: usize = index2.get(&v.acc).unwrap()[v.from as usize];
         let mut to_id:usize = index2.get(&v.acc).unwrap()[v.to as usize-1];
 
@@ -415,15 +389,21 @@ pub fn bed(r: & bubble_wrapper, index2: & HashMap<String, Vec<usize>>, max_index
         } else if v.to == v.from+1{
             to_id = from_id.clone();
         }
-        write!(f, "{}\t{}\t{}\t{}\n", v.clone().acc, from_id, to_id, r.id2id.get(&(v.from, v.to, &v.acc)).unwrap()).expect("Not able to write to file");
+        let bub = r.id2bubble.get(r.id2id.get(&(v.from, v.to, &v.acc)).unwrap()).unwrap();
+
+        write!(f, "{}\t{}\t{}\t{}\t{}\n",
+               v.clone().acc,
+               from_id,
+               to_id,
+                bub.id,
+               bub.core).expect("Not able to write to file");
                //f.write_all("{} {} {} {}", v.acc, v.from, v.to, index.get(&v).unwrap());
     }
 }
 
-pub fn testing_lib(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut bubble_wrapper ){
+pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
     let mut network: HashMap<(u32, u32), Network>;
     for (k,v) in hm.iter(){
-
         let mut jo: Vec<(u32, u32)> = Vec::new();
         for x in v.iter() {
             jo.push((x.start.clone(), x.end.clone()));
@@ -433,12 +413,12 @@ pub fn testing_lib(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut bubble_wr
 
         make_nested(&jo, & mut network);
 
-        testv2(&network,  result, &k);
+        connect_bubbles(&network,  result, &k);
 
     }
 }
 
-pub fn testv2(hm: &HashMap<(u32, u32), Network>, result: & mut bubble_wrapper, s: &String){
+pub fn connect_bubbles(hm: &HashMap<(u32, u32), Network>, result: & mut BubbleWrapper, s: &String){
 
 
 
@@ -464,47 +444,47 @@ pub fn testv2(hm: &HashMap<(u32, u32), Network>, result: & mut bubble_wrapper, s
 
 
 
-pub fn find_parents(h: &HashMap<&String, Vec<(u32, u32, u32)>>, hu: &mut HashMap< u32, Bubble>, thekey: &HashMap<u32, u32>){
-    let mut opens: Vec<usize> = Vec::new();
-    println!("{:?}", thekey);
-    // iterating over the the vector acc -> (start stop)
-    for (i2, (j,i)) in h.iter().enumerate(){
-       opens = Vec::new();
-        for (ii, x) in i.iter().enumerate(){
-            if opens.len() == 0{
-                opens.push(ii)
-            } else {
-                // this is why
-                let mut vecc = Vec::new();
-                for (indi, oi) in opens.iter().rev().enumerate(){
-                    if i[*oi].1 < x.0{
-                        vecc.push(indi);
-                        if indi == opens.len() -1{
-                        } else {
-                            let k = hu[&((thekey[&i[oi-1].2]))].id.clone();
-                            println!("dasdad {:?}",k);
-                            hu.get_mut(&(thekey[&i[oi-1].2])).unwrap().addChild(k);
-
-                        }
-                    }
-                }
-                opens.push(ii);
-                println!("Weggle {:?}", vecc);
-            }
-        }
-        println!("{}", opens.len());
-        println!("{:?}", opens);
-        if opens.len() != 0{
-            for end in (1..opens.len()).rev(){
-                println!("{:?}", thekey);
-                let k = hu[&((thekey[&i[end-1].2]))].id.clone();
-                let k2 = hu[&((thekey[&i[end].2]))].id.clone();
-                println!("{:?}",k);
-                hu.get_mut(&(thekey[&i[end].2])).unwrap().addChild(k);
-                hu.get_mut(&(thekey[&i[end-1].2])).unwrap().addPar(k2);
-                //hu.get_mut(&(1 as u32)).unwrap().link(hu.get_mut(&(1 as u32)).unwrap());
-            }
-
-        }
-    }
-}
+// pub fn find_parents(h: &HashMap<&String, Vec<(u32, u32, u32)>>, hu: &mut HashMap< u32, Bubble>, thekey: &HashMap<u32, u32>){
+//     let mut opens: Vec<usize> = Vec::new();
+//     println!("{:?}", thekey);
+//     // iterating over the the vector acc -> (start stop)
+//     for i in h.iter(){
+//        opens = Vec::new();
+//         for (ii, x) in i.iter().enumerate(){
+//             if opens.len() == 0{
+//                 opens.push(ii)
+//             } else {
+//                 // this is why
+//                 let mut vecc = Vec::new();
+//                 for (indi, oi) in opens.iter().rev().enumerate(){
+//                     if i[*oi].1 < x.0{
+//                         vecc.push(indi);
+//                         if indi == opens.len() -1{
+//                         } else {
+//                             let k = hu[&((thekey[&i[oi-1].2]))].id.clone();
+//                             println!("dasdad {:?}",k);
+//                             hu.get_mut(&(thekey[&i[oi-1].2])).unwrap().addChild(k);
+//
+//                         }
+//                     }
+//                 }
+//                 opens.push(ii);
+//                 println!("Weggle {:?}", vecc);
+//             }
+//         }
+//         println!("{}", opens.len());
+//         println!("{:?}", opens);
+//         if opens.len() != 0{
+//             for end in (1..opens.len()).rev(){
+//                 println!("{:?}", thekey);
+//                 let k = hu[&((thekey[&i[end-1].2]))].id.clone();
+//                 let k2 = hu[&((thekey[&i[end].2]))].id.clone();
+//                 println!("{:?}",k);
+//                 hu.get_mut(&(thekey[&i[end].2])).unwrap().addChild(k);
+//                 hu.get_mut(&(thekey[&i[end-1].2])).unwrap().addPar(k2);
+//                 //hu.get_mut(&(1 as u32)).unwrap().link(hu.get_mut(&(1 as u32)).unwrap());
+//             }
+//
+//         }
+//     }
+// }

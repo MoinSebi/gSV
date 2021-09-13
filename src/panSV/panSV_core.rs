@@ -11,7 +11,7 @@ pub struct PanSVpos {
 }
 
 /// For interval_open ->
-pub struct Tmp_pos {
+pub struct TmpPos {
     pub acc:  String,
     pub start:  u32,
     pub core:  u32,
@@ -21,7 +21,7 @@ pub struct Tmp_pos {
 
 
 
-pub struct bubble_wrapper<'a>{
+pub struct BubbleWrapper<'a>{
     pub id2bubble: HashMap<u32, Bubble>,
     pub id2interval: HashMap<u32, Posindex>,
 
@@ -31,7 +31,7 @@ pub struct bubble_wrapper<'a>{
 
 }
 
-impl bubble_wrapper<'_>{
+impl BubbleWrapper<'_>{
     pub fn new() -> Self {
         let id2bubble: HashMap<u32, Bubble> = HashMap::new();
         let id2interval: HashMap<u32, Posindex> = HashMap::new();

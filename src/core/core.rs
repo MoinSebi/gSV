@@ -49,22 +49,12 @@ impl Bubble {
         }
     }
 
-
-    /// Adding a children
-    pub fn addChild(&mut self, new_child: u32){self.children.insert(new_child);
-    }
-
-    /// Adding a parent
-    pub fn addPar(&mut self, new_parent: u32){
-        self.parents.insert(new_parent);
-    }
-
     /// Mean, max and min length of all traversals
     ///
     /// ??? Changing
     pub fn traversal_stats(&self) -> (u32, u32, f32){
         let mut all_length = Vec::new();
-        for (k,v) in self.traversals.iter(){
+        for (_k,v) in self.traversals.iter(){
             all_length.push(v.length);
         }
 
@@ -76,29 +66,37 @@ impl Bubble {
         (m1.clone(), m2.clone(),mean)
     }
 
-    /// Number of traversal
-    pub fn number_traversals(&self) -> usize{
-        self.traversals.len()
-    }
+
 
     /// Total number of intervals
     pub fn number_interval(&self) -> usize{
         let mut number = 0;
-        for (k,v) in self.traversals.iter(){
+        for (_k,v) in self.traversals.iter(){
             number += v.pos.len();
         }
         number
     }
 
+    #[allow(dead_code)]
     /// Number of different accessions
-    pub fn number_acc(&self, hm: HashMap<u32, Posindex>) -> usize{
+    pub fn number_acc(&self, hm: &HashMap<u32, Posindex>) -> usize{
         let mut accession_numb= HashSet::new();
-        for (k,v) in self.traversals.iter(){
+        for (_k,v) in self.traversals.iter(){
             for x in v.pos.iter(){
                 accession_numb.insert(hm.get(x).unwrap().acc.clone());
             }
         }
         accession_numb.len()
+    }
+
+    pub fn all_acc(&self, hm: &HashMap<u32, Posindex>) -> HashSet<String>{
+        let mut accession_numb= HashSet::new();
+        for (_k,v) in self.traversals.iter(){
+            for x in v.pos.iter(){
+                accession_numb.insert(hm.get(x).unwrap().acc.clone());
+            }
+        }
+        accession_numb
     }
 }
 
@@ -109,17 +107,30 @@ pub fn bubble_naming_old(hm1: &HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32,
     let core = bubble.core;
     let mut h = s.clone();
     // Auffüllen
-    for x in s.len() as u32..*maxcore-core{
+    for _x in s.len() as u32..*maxcore-core{
         h.push(0);
     }
     h.push(number.clone());
 
     let mut h2 = h.clone();
-    for x in 2..core{
+    for _x in 2..core{
         h2.push(0 as u32);
     }
     let j:Vec<String> = h2.iter().map(|i| i.to_string()).collect();
-    write!(*buff, "{}\t{}\t{}\n", j.join("."), bubble.traversals.len(), bubble.number_interval()).expect("Can not write file");
+
+    let (max, min ,mean) = bubble.traversal_stats();
+    write!(*buff, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+           j.join("."),
+           bubble.core,
+           bubble.children.len(),
+            min,
+            max,
+            mean,
+           bubble.traversals.len(),
+           bubble.number_interval(),
+        10,
+
+    ).expect("Can not write file");
 
     if bubble.children.len() > 0 {
         let mut it = 1;
@@ -131,9 +142,21 @@ pub fn bubble_naming_old(hm1: &HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32,
     }
 }
 
+
+/// This is a wrapper for bubble_naming_old
 pub fn naming_wrapper(hm1: &HashMap<u32, Bubble>, maxcore: &u32, out: &str){
     let f = File::create([out, "stats"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
+    write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+    "bubbleID",
+    "coreNumber",
+    "subBubbles",
+    "minLen",
+    "maxLen",
+    "meanLen",
+    "#traversal",
+    "#intervals",
+    "test").expect("Can not write stats file");
     let mut it = 0;
     for (k,v) in hm1.iter(){
 
@@ -154,11 +177,12 @@ pub struct Traversal {
 }
 
 impl  Traversal{
-    pub fn addPos(&mut self, pos: u32){
+    pub fn add_pos(&mut self, pos: u32){
         self.pos.push(pos);
     }
 
-    pub fn numbAcc(&self, tindex: &HashMap<u32, Posindex>){
+    #[allow(dead_code)]
+    pub fn numb_acc(&self, tindex: &HashMap<u32, Posindex>){
         let mut h :HashSet<&String> = HashSet::new();
         for x in self.pos.iter(){
             h.insert(&tindex.get(x).unwrap().acc);
@@ -175,6 +199,7 @@ impl  Traversal{
         }
     }
 
+    #[allow(dead_code)]
     pub fn get_pos(& self) -> usize{
         self.pos.len()
     }

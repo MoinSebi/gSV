@@ -2,11 +2,11 @@ use std::collections::{HashMap, HashSet};
 use gfaR::Gfa;
 
 
-pub struct count_node{
+pub struct CountNode {
     pub ncount: HashMap<String, u32>,
 }
 
-pub fn counting_nodes(g: &Gfa) -> count_node{
+pub fn counting_nodes(g: &Gfa) -> CountNode {
     let mut nc: HashMap<String, u32> = HashMap::new();
     for x in &g.nodes{
         nc.insert(x.0.clone(), 0);
@@ -19,6 +19,6 @@ pub fn counting_nodes(g: &Gfa) -> count_node{
             *nc.get_mut(&y).unwrap() += 1;
         }
     }
-    count_node{ncount: nc}
+    CountNode {ncount: nc}
 }
 
