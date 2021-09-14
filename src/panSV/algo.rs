@@ -269,14 +269,15 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
                 // This bubble we are looking at
                 let temp_bcount = result.anchor2bubble.get(&newbub).unwrap();
-                let bub = result.id2bubble.get(temp_bcount).unwrap();
+                let bub = result.id2bubble.get_mut(temp_bcount).unwrap();
                 result.anchor2interval.insert((&pos.start, &pos.end, &x.name), tcount);
                 let bub_id = bub.id.clone();
-
+                bub.acc.insert(x.name.clone());
 
                 // Check if traversal already there
                 if bub.traversals.contains_key(&k){
                     result.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k).unwrap().add_pos(tcount);
+
                     //pV.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k).unwrap().addPos(tcount);
                 }
                 else {
@@ -313,7 +314,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
                 result.anchor2bubble.insert(newbub, bcount);
                 result.id2bubble.insert(bcount, Bubble::new(pos.core.clone(), x.nodes[pos.start as usize].clone(), x.nodes[pos.end as usize].clone(),
-                                                            tcount, bcount, tt, k));
+                                                            tcount, bcount, tt, k, &x.name));
                 result.id2interval.insert(tcount, Posindex {from: pos.start.clone(), to: pos.end.clone(), acc: x.name.clone(), border: pos.border.clone()});
                 result.anchor2interval.insert((&pos.start, &pos.end, &x.name), tcount);
                 result.id2id.insert((pos.start.clone(), pos.end.clone(), &x.name), bcount);
@@ -351,10 +352,11 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<Path>, las
             if r.anchor2bubble.contains_key(&ind){
 
                 let bub =  r.id2bubble.get_mut(r.anchor2bubble.get(&ind).unwrap()).unwrap();
-                if ! bub.all_acc(& r.id2interval).contains(& path.name) {
+                if ! bub.acc.contains(& path.name) {
                     let k: Vec<String> = vec![];
                     let jo: Traversal = Traversal::new(ll, 0);
                     r.id2interval.insert(ll, Posindex {from: (x as u32), to: ((x+1) as u32), acc: path.name.clone(), border: false});
+                    bub.acc.insert(path.name.clone());
                     r.id2id.insert(((x as u32), ((x+1) as u32), & path.name), bub.id.clone());
                     if bub.traversals.contains_key(&k){
                         bub.traversals.get_mut(&k).unwrap().pos.push(ll);
@@ -402,8 +404,10 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, max
 }
 
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
+    println!("Connect bubbles");
     let mut network: HashMap<(u32, u32), Network>;
     for (k,v) in hm.iter(){
+        println!("Connecting bubbles from {}", k);
         let mut jo: Vec<(u32, u32)> = Vec::new();
         for x in v.iter() {
             jo.push((x.start.clone(), x.end.clone()));

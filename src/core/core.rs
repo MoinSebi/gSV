@@ -22,19 +22,23 @@ pub struct Bubble {
     pub children: HashSet<u32>,
     pub parents: HashSet<u32>,
     pub traversals: HashMap<Vec<String>, Traversal>,
+    pub acc: HashSet<String>,
     // this is kinda panSV specific
     pub core: u32
+
 
 }
 
 
 impl Bubble {
     /// Bubble constructor
-    pub fn new(core: u32, start: String, end: String, first:u32, i: u32, trav: Traversal, s : Vec<String>) -> Self{
+    pub fn new(core: u32, start: String, end: String, first:u32, i: u32, trav: Traversal, s : Vec<String>, acc1: &String) -> Self{
         let mut u: Vec<u32> = Vec::new();
         u.push(first);
         let u2: HashSet<u32> = HashSet::new();
         let u3: HashSet<u32> = HashSet::new();
+        let mut acc: HashSet<String> = HashSet::new();
+        acc.insert(acc1.clone());
         let mut u4: HashMap<Vec<String>, Traversal> = HashMap::new();
         u4.insert(s, trav);
         Self {
@@ -45,6 +49,7 @@ impl Bubble {
             id: i,
             traversals: u4,
             core: core,
+            acc:acc,
 
         }
     }
