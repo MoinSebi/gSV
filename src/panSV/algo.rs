@@ -272,7 +272,6 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
                 let bub = result.id2bubble.get_mut(temp_bcount).unwrap();
                 result.anchor2interval.insert((&pos.start, &pos.end, &x.name), tcount);
                 let bub_id = bub.id.clone();
-                bub.acc.insert(x.name.clone());
 
                 // Check if traversal already there
                 if bub.traversals.contains_key(&k){
@@ -314,7 +313,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
                 result.anchor2bubble.insert(newbub, bcount);
                 result.id2bubble.insert(bcount, Bubble::new(pos.core.clone(), x.nodes[pos.start as usize].clone(), x.nodes[pos.end as usize].clone(),
-                                                            tcount, bcount, tt, k, &x.name));
+                                                            tcount, bcount, tt, k, pos.border));
                 result.id2interval.insert(tcount, Posindex {from: pos.start.clone(), to: pos.end.clone(), acc: x.name.clone(), border: pos.border.clone()});
                 result.anchor2interval.insert((&pos.start, &pos.end, &x.name), tcount);
                 result.id2id.insert((pos.start.clone(), pos.end.clone(), &x.name), bcount);
@@ -352,23 +351,22 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<Path>, las
             if r.anchor2bubble.contains_key(&ind){
 
                 let bub =  r.id2bubble.get_mut(r.anchor2bubble.get(&ind).unwrap()).unwrap();
-                if ! bub.acc.contains(& path.name) {
+                //if ! bub.acc.contains(& path.name) {
+                if ! bub.border {
                     let k: Vec<String> = vec![];
                     let jo: Traversal = Traversal::new(ll, 0);
-                    r.id2interval.insert(ll, Posindex {from: (x as u32), to: ((x+1) as u32), acc: path.name.clone(), border: false});
-                    bub.acc.insert(path.name.clone());
-                    r.id2id.insert(((x as u32), ((x+1) as u32), & path.name), bub.id.clone());
-                    if bub.traversals.contains_key(&k){
+                    r.id2interval.insert(ll, Posindex { from: (x as u32), to: ((x + 1) as u32), acc: path.name.clone(), border: false });
+                    bub.border = false;
+                    r.id2id.insert(((x as u32), ((x + 1) as u32), &path.name), bub.id.clone());
+                    if bub.traversals.contains_key(&k) {
                         bub.traversals.get_mut(&k).unwrap().pos.push(ll);
-
-
-                    }
-                    else{
+                    } else {
                         bub.traversals.insert(k.clone(), jo);
                         bub.traversals.get_mut(&k).unwrap().pos.push(ll);
                     }
                     ll += 1;
                 }
+                //}
 
             }
         }

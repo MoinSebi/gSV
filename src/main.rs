@@ -70,7 +70,7 @@ fn main() {
     println!("PanSV running");
     let (o,m) = algo_panSV(&graph.paths, &gg);
     let h = graph2pos(&graph);
-    println!("Creating bubbbles");
+    println!("Creating bubbles");
     let mut gg = create_bubbles(&o, &graph.paths, &h);
     //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
 
