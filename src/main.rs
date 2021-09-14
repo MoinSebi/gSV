@@ -75,7 +75,8 @@ fn main() {
     //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
 
     println!("Indel detection");
-    indel_detection(& mut gg, &graph.paths, o.len() as u32);
+    let interval_numb = gg.id2interval.len() as u32;
+    indel_detection(& mut gg, &graph.paths, interval_numb);
 
 
     println!("Writing bed");
