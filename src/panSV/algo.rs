@@ -55,7 +55,7 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &CountNode) -> (HashMap<String, Ve
         for (index, node) in x.nodes.iter().enumerate() {
             // if core is smaller than before -> open new bubble
             if counts.ncount[node] < lastcore {
-                interval_open.insert(0, TmpPos { acc: x.name.clone(), start: (index - 1) as u32, core: lastcore, border: false});
+                interval_open.push(TmpPos { acc: x.name.clone(), start: (index - 1) as u32, core: lastcore, border: false});
                 lastcore = counts.ncount[node];
             }
             // If bigger -> close bubble
