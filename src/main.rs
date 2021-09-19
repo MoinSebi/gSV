@@ -5,12 +5,13 @@ mod core;
 mod panSV;
 use gfaR::{Gfa};
 use crate::core::counting::{counting_nodes, CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, writing_bed};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, writing_bed, writing_traversals};
 use crate::core::graph_helper::graph2pos;
 use crate::core::core::{naming_wrapper};
 use clap::{Arg, App};
 use std::path::Path;
 use std::process;
+use crate::panSV::panSV_core::old_naming;
 
 
 fn main() {
@@ -29,6 +30,10 @@ fn main() {
             .about("Output prefix")
             .takes_value(true)
             .default_value("panSV.output"))
+        .arg(Arg::new("traversal")
+            .short('t')
+            .long("traversal")
+            .about("Additional traversal file as output"))
 
         .get_matches();
 
@@ -78,11 +83,19 @@ fn main() {
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
 
+    let mut jj = old_naming::new();
+
 
     println!("Writing bed");
-    naming_wrapper(& gg.id2bubble, &(graph.paths.len() as u32), outpre);
+    naming_wrapper(& gg.id2bubble, &(graph.paths.len() as u32), outpre,  &mut jj.hm);
     println!("Writing stats");
     writing_bed(& gg, &h, &m, outpre);
+
+
+    if matches.is_present("traversal"){
+        println!("Writing traversal");
+        writing_traversals(&gg, &jj, outpre);
+    }
 
 
 }

@@ -1,7 +1,7 @@
 use std::collections::{HashMap};
 use gfaR::{Path};
 use crate::core::counting::CountNode;
-use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper};
+use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper, old_naming};
 use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
 use std::fs::File;
@@ -86,9 +86,6 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &CountNode) -> (HashMap<String, Ve
                         }
                         remove_list.push(index_open);
                     }
-                    if o_trans.core >= counts.ncount[node] {
-                        break;
-                    }
                 }
                 // Remove stuff from the interval_open list
                 for (index_r, index_remove) in remove_list.iter().enumerate() {
@@ -105,7 +102,7 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &CountNode) -> (HashMap<String, Ve
         }
         // This the other end - its one longer than the rest (identifier)
         for otrans in interval_open.iter(){
-            if !(otrans.start == 0){
+            if (otrans.start != 0) & (otrans.border != true){
                 result_panSV.get_mut(&otrans.acc).unwrap().push(PanSVpos {start: otrans.start, end: (x.nodes.len()-1) as u32, core: otrans.core, border: true});
 
             }
@@ -113,6 +110,7 @@ pub fn algo_panSV(paths: & Vec<Path>, counts: &CountNode) -> (HashMap<String, Ve
 
     }
     let result_result = sort_trav(clean_borders(result_panSV, &max_index));
+    //println!("{:?}", result_result);
 
 (result_result, max_index)
 }
@@ -248,7 +246,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
         for pos in inp[&x.name].iter(){
 
             let newbub = (& x.nodes[pos.start as usize], & x.nodes[pos.end as usize]);
-            let len_trav: usize  = ghm.get(&x.name).unwrap()[pos.end as usize] -  ghm.get(&x.name).unwrap()[pos.start as usize];
+            let len_trav: usize  = ghm.get(&x.name).unwrap()[pos.end as usize-1] -  ghm.get(&x.name).unwrap()[pos.start as usize];
 
             let tt = Traversal{length: len_trav as u32, pos: vec![tcount]};
 
@@ -264,7 +262,8 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
                 // make traversal
                 // Vec -> meta
                 let k: Vec<String> = x.nodes[(pos.start+1) as usize..pos.end as usize].iter().cloned().collect();
-
+                //let k2: Vec<bool> = x.dir[(pos.start+1) as usize..pos.end as usize].iter().cloned().collect();
+                //println!("{:?}", k2);
 
 
                 // This bubble we are looking at
@@ -399,6 +398,25 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, max
                bub.core).expect("Not able to write to file");
                //f.write_all("{} {} {} {}", v.acc, v.from, v.to, index.get(&v).unwrap());
     }
+}
+
+pub fn writing_traversals(h: &BubbleWrapper, naming: &old_naming, out: &str){
+    let f = File::create([out, "traversal", "txt"].join(".")).expect("Unable to create file");
+    let mut f = BufWriter::new(f);
+    for x in h.id2bubble.iter(){
+        for y in x.1.traversals.iter(){
+            write!(f, "{}\t{}\t{}", y.0.join(","), y.1.length, vec2string(&naming.hm.get(&x.1.id).unwrap())).expect("Can't write traversal file");
+        }
+    }
+}
+
+
+
+pub fn vec2string(input: &Vec<u32>) -> String{
+    let j:Vec<String> = input.iter().map(|i| i.to_string()).collect();
+    j.join(".")
+
+
 }
 
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){

@@ -2,8 +2,7 @@ use std::collections::{HashMap, HashSet};
 use std::fs::File;
 use std::io::BufWriter;
 use std::io::Write;
-
-
+use std::hash::Hash;
 
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
@@ -24,7 +23,8 @@ pub struct Bubble {
     pub traversals: HashMap<Vec<String>, Traversal>,
     pub border: bool,
     // this is kinda panSV specific
-    pub core: u32
+    pub core: u32,
+    pub old_names: Vec<u32>,
 
 
 }
@@ -38,6 +38,7 @@ impl Bubble {
         let u2: HashSet<u32> = HashSet::new();
         let u3: HashSet<u32> = HashSet::new();
         let mut u4: HashMap<Vec<String>, Traversal> = HashMap::new();
+        let name : Vec<u32> = Vec::new();
         u4.insert(s, trav);
         Self {
             start: start,
@@ -48,6 +49,7 @@ impl Bubble {
             traversals: u4,
             core: core,
             border: border.clone(),
+            old_names: name,
 
         }
     }
@@ -105,8 +107,8 @@ impl Bubble {
 
 
 
-pub fn bubble_naming_old(hm1: &HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32, maxcore: &u32, number: &u32, buff: & mut BufWriter<File>){
-    let bubble = hm1.get(& nodeid).unwrap();
+pub fn bubble_naming_old(hm1: & HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32, maxcore: &u32, number: &u32, buff: & mut BufWriter<File>, naming: & mut HashMap<u32, Vec<u32>>){
+    let bubble = hm1.get (& nodeid).unwrap();
     let core = bubble.core;
     let mut h = s.clone();
     // Auffüllen
@@ -116,13 +118,13 @@ pub fn bubble_naming_old(hm1: &HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32,
     h.push(number.clone());
 
     let mut h2 = h.clone();
-    for _x in 2..core{
+    for _x in 2..core {
         h2.push(0 as u32);
     }
     let j:Vec<String> = h2.iter().map(|i| i.to_string()).collect();
-
+    naming.insert(bubble.id.clone(), h2.clone());
     let (max, min ,mean) = bubble.traversal_stats();
-    write!(*buff, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+    write!(*buff, "{}\t{}\t{}\t{}\t{}\t{:.2}\t{}\t{}\t\n",
            j.join("."),
            bubble.core,
            bubble.children.len(),
@@ -131,26 +133,34 @@ pub fn bubble_naming_old(hm1: &HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32,
             mean,
            bubble.traversals.len(),
            bubble.number_interval(),
-        10,
 
     ).expect("Can not write file");
 
     if bubble.children.len() > 0 {
-        let mut it = 1;
+        let mut hm_test: HashMap<u32, u32> = HashMap::new();
         for x in bubble.children.iter(){
+            if hm_test.contains_key(&hm1.get(x).unwrap().core){
+                let u = hm_test.get(&hm1.get(x).unwrap().core).unwrap();
+                bubble_naming_old(hm1, &h, x, maxcore, &u, buff, naming);
+                *hm_test.get_mut(&hm1.get(x).unwrap().core).unwrap() += 1;
 
-            bubble_naming_old(hm1, &h, x, maxcore, &it, buff);
-            it += 1;
+            } else {
+                bubble_naming_old(hm1, &h, x, maxcore, &1, buff, naming);
+                hm_test.insert(hm1.get(x).unwrap().core.clone(), 2);
+            }
+
+            //bubble_naming_old(hm1, &h, x, maxcore, &it, buff, naming);
+            //it += 1;
         }
     }
 }
 
 
 /// This is a wrapper for bubble_naming_old
-pub fn naming_wrapper(hm1: &HashMap<u32, Bubble>, maxcore: &u32, out: &str){
+pub fn naming_wrapper(hm1: & HashMap<u32, Bubble>, maxcore: &u32, out: &str, naming: &mut HashMap<u32, Vec<u32>>){
     let f = File::create([out, "stats"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
-    write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
+    write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
     "bubbleID",
     "coreNumber",
     "subBubbles",
@@ -158,15 +168,14 @@ pub fn naming_wrapper(hm1: &HashMap<u32, Bubble>, maxcore: &u32, out: &str){
     "maxLen",
     "meanLen",
     "#traversal",
-    "#intervals",
-    "test").expect("Can not write stats file");
-    let mut it = 0;
+    "#intervals").expect("Can not write stats file");
+    let mut it = 1;
     for (k,v) in hm1.iter(){
 
         if v.parents.len() == 0{
             let j: Vec<u32> = vec![];
 
-            bubble_naming_old(hm1, &j, k, maxcore, &it, & mut f);
+            bubble_naming_old(hm1, &j, k, maxcore, &it, & mut f, naming);
 
             it += 1;
         }

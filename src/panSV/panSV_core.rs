@@ -18,8 +18,18 @@ pub struct TmpPos {
     pub border: bool,
 }
 
+pub struct old_naming{
+    pub hm: HashMap<u32, Vec<u32>>,
+}
 
-
+impl old_naming{
+    pub fn new()->Self{
+        let g:  HashMap<u32, Vec<u32>> = HashMap::new();
+        Self{
+            hm: g,
+        }
+    }
+}
 
 pub struct BubbleWrapper<'a>{
     pub id2bubble: HashMap<u32, Bubble>,
