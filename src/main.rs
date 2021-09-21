@@ -3,7 +3,6 @@
 mod core;
 #[allow(non_snake_case)]
 mod panSV;
-use gfaR::{Gfa};
 use crate::core::counting::{counting_nodes, CountNode};
 use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, writing_bed, writing_traversals};
 use crate::core::graph_helper::graph2pos;
@@ -11,7 +10,8 @@ use crate::core::core::{naming_wrapper};
 use clap::{Arg, App};
 use std::path::Path;
 use std::process;
-use crate::panSV::panSV_core::old_naming;
+use crate::panSV::panSV_core::OldNaming;
+use gfaR_wrapper::NGfa;
 
 
 fn main() {
@@ -63,11 +63,14 @@ fn main() {
         outpre = "panSV.out"
     }
 
-    let mut graph: Gfa = Gfa::new();
-    graph.read_file(g1);
+
+
+    let mut graph: NGfa = NGfa::new();
+    graph.from_graph(g1);
 
     // Counting nodes
     println!("Counting");
+
     let gg: CountNode = counting_nodes(&graph);
 
 
@@ -83,7 +86,7 @@ fn main() {
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
 
-    let mut jj = old_naming::new();
+    let mut jj = OldNaming::new();
 
 
     println!("Writing bed");

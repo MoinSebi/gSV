@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 
 
-pub fn graph2pos(graph: & gfaR::Gfa) -> HashMap<String, Vec<usize>>{
+pub fn graph2pos(graph: & gfaR_wrapper::NGfa) -> HashMap<String, Vec<usize>>{
     let mut hm: HashMap<String, Vec<usize>> = HashMap::new();
     for x in graph.paths.iter(){
         let mut vec_pos: Vec<usize> = Vec::new();

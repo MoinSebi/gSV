@@ -15,12 +15,12 @@ pub struct Posindex {
 
 #[derive(Debug, Clone)]
 pub struct Bubble {
-    pub start: String,
-    pub end: String,
+    pub start: u32,
+    pub end: u32,
     pub id: u32,
     pub children: HashSet<u32>,
     pub parents: HashSet<u32>,
-    pub traversals: HashMap<Vec<String>, Traversal>,
+    pub traversals: HashMap<Vec<(u32, bool)>, Traversal>,
     pub border: bool,
     // this is kinda panSV specific
     pub core: u32,
@@ -32,12 +32,12 @@ pub struct Bubble {
 
 impl Bubble {
     /// Bubble constructor
-    pub fn new(core: u32, start: String, end: String, first:u32, i: u32, trav: Traversal, s : Vec<String>, border: bool) -> Self{
+    pub fn new(core: u32, start: u32, end: u32, first:u32, i: u32, trav: Traversal, s : Vec<(u32, bool)>, border: bool) -> Self{
         let mut u: Vec<u32> = Vec::new();
         u.push(first);
         let u2: HashSet<u32> = HashSet::new();
         let u3: HashSet<u32> = HashSet::new();
-        let mut u4: HashMap<Vec<String>, Traversal> = HashMap::new();
+        let mut u4: HashMap<Vec<(u32, bool) >, Traversal> = HashMap::new();
         let name : Vec<u32> = Vec::new();
         u4.insert(s, trav);
         Self {
