@@ -5,7 +5,8 @@ use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
 use gfaR_wrapper::NPath;
 use std::io::{self, Write};
-
+use std::thread::sleep;
+use std::{thread, time};
 
 
 #[allow(non_snake_case)]
@@ -16,6 +17,7 @@ use std::io::{self, Write};
 /// panSVpos: index, index, core
 ///
 pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, Vec<PanSVpos>>, HashMap<String, usize>) {
+    print!("PanSV running\n");
 
     let mut lastcore: u32;
     #[allow(non_snake_case)]
@@ -29,8 +31,9 @@ pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, V
         result_panSV.insert(x.name.to_owned().clone(), ki);
     }
 
+
     // Iterate over each path
-    for x in paths {
+    for (i, x) in paths.iter().enumerate() {
         // Need max index later
         max_index.insert(x.name.clone(), x.nodes.len()-1);
         lastcore = 1;
@@ -38,8 +41,9 @@ pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, V
         // All "open" intervals
         let mut interval_open:  Vec<TmpPos> = Vec::new();
 
-        println!("Path name: {}\r", x.name);
-        //io::stdout().flush().unwrap();
+        print!("({}/{}) {}\r", i+1, paths.len(), x.name);
+        io::stdout().flush().unwrap();
+        thread::sleep(time::Duration::from_millis(200));
         // Iterate over all nodes
         for (index, node) in x.nodes.iter().enumerate() {
 
@@ -132,12 +136,18 @@ pub fn sort_trav(result:  HashMap<String, Vec<PanSVpos>>) -> HashMap<String, Vec
 ///
 pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   Vec<NPath>, ghm: &'b HashMap<String, Vec<usize>>) -> BubbleWrapper<'a>{
 
+    println!("\nCreate bubbles");
     let mut result: BubbleWrapper = BubbleWrapper::new();
 
     let mut tcount = 0;
     let mut bcount = 0;
 
-    for x in p{
+    for (i,x) in p.iter().enumerate(){
+
+        print!("({}/{}) {}\r", i+1, p.len(), x.name);
+        io::stdout().flush().unwrap();
+
+
         for pos in inp[&x.name].iter(){
 
             let newbub = (& x.nodes[pos.start as usize], & x.nodes[pos.end as usize]);
@@ -273,10 +283,14 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
 ///
 /// Running function for each path alone
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
-    println!("Connect bubbles");
+    println!("\nConnecting bubbbles");
     let mut network: HashMap<(u32, u32), Network>;
-    for (k,v) in hm.iter(){
-        println!("Connecting bubbles from {}", k);
+    for (i ,(k,v)) in hm.iter().enumerate(){
+
+        print!("({}/{}) {}\r", i+1, hm.len(), k);
+        thread::sleep(time::Duration::from_millis(2000));
+        io::stdout().flush().unwrap();
+
         let mut jo: Vec<(u32, u32)> = Vec::new();
         for x in v.iter() {
             jo.push((x.start.clone(), x.end.clone()));

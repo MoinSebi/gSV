@@ -73,20 +73,18 @@ fn main() {
     graph.from_graph(g1);
 
     // Counting nodes
-    println!("Counting");
+    println!("Counting nodes");
 
     let gg: CountNode = counting_nodes(&graph);
 
 
 
-    println!("PanSV running");
     let (o,_m) = algo_panSV(&graph.paths, &gg);
     let h = graph2pos(&graph);
-    println!("Creating bubbles");
     let mut gg = create_bubbles(&o, &graph.paths, &h);
 
 
-    println!("Indel detection");
+    println!("\nIndel detection");
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
 
