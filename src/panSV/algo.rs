@@ -1,11 +1,10 @@
 use std::collections::{HashMap};
 use crate::core::counting::{CountNode};
-use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper, OldNaming};
+use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper};
 use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
-use std::fs::File;
-use std::io::{Write, BufWriter};
 use gfaR_wrapper::NPath;
+use std::io::{self, Write};
 
 
 
@@ -39,14 +38,15 @@ pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, V
         // All "open" intervals
         let mut interval_open:  Vec<TmpPos> = Vec::new();
 
-        println!("Path name: {}", x.name);
+        println!("Path name: {}\r", x.name);
+        //io::stdout().flush().unwrap();
         // Iterate over all nodes
         for (index, node) in x.nodes.iter().enumerate() {
 
             // if core is smaller than before -> open new bubble
             if counts.ncount[node] < lastcore {
                 interval_open.push(TmpPos { acc: x.name.clone(), start: (index - 1) as u32, core: lastcore});
-                lastcore = counts.ncount[node];
+
             }
             // If bigger -> close bubble
             else if (counts.ncount[node] > lastcore) & (interval_open.len() > 0) {
@@ -268,65 +268,10 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
 }
 
 
-pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, max_index: &HashMap<String, usize>, out: &str){
 
-    let f = File::create([out, "bed"].join(".")).expect("Unable to create file");
-    let mut f = BufWriter::new(f);
-
-    for (_k,v) in r.id2interval.iter() {
-        let mut from_id: usize = index2.get(&v.acc).unwrap()[v.from as usize];
-        let mut to_id:usize = index2.get(&v.acc).unwrap()[v.to as usize-1];
-
-        if v.to == v.from+1{
-            to_id = from_id.clone();
-        }
-        let bub = r.id2bubble.get(r.id2id.get(&(v.from, v.to, &v.acc)).unwrap()).unwrap();
-
-        write!(f, "{}\t{}\t{}\t{}\t{}\n",
-               v.clone().acc,
-               from_id,
-               to_id,
-                bub.id,
-               bub.core).expect("Not able to write to file");
-               //f.write_all("{} {} {} {}", v.acc, v.from, v.to, index.get(&v).unwrap());
-    }
-}
-
-pub fn writing_traversals(h: &BubbleWrapper, naming: &OldNaming, out: &str){
-    let f = File::create([out, "traversal", "txt"].join(".")).expect("Unable to create file");
-    let mut f = BufWriter::new(f);
-    for x in h.id2bubble.iter(){
-
-        for y in x.1.traversals.iter(){
-            let mut o: Vec<String> = Vec::new();
-            for x in y.0.iter(){
-                let j: String =  x.0.to_string() + &bool2string_dir(x.1);
-                o.push(j);
-
-            }
-
-            write!(f, "{}\t{}\t{}\n", o.join(","), y.1.length, vec2string(&naming.hm.get(&x.1.id).unwrap())).expect("Can't write traversal file");
-        }
-    }
-}
-
-pub fn bool2string_dir(b: bool) -> String{
-    if b{
-        return "+".to_string();
-
-    } else {
-        return "-".to_string();
-    }
-
-}
-
-pub fn vec2string(input: &Vec<u32>) -> String{
-    let j:Vec<String> = input.iter().map(|i| i.to_string()).collect();
-    j.join(".")
-
-
-}
-
+/// Wrapper function for connect_bubbles
+///
+/// Running function for each path alone
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
     println!("Connect bubbles");
     let mut network: HashMap<(u32, u32), Network>;
@@ -336,33 +281,23 @@ pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  m
         for x in v.iter() {
             jo.push((x.start.clone(), x.end.clone()));
         }
-        println!("{}", related_intervals::check_overlapping(& mut jo));
         network = related_intervals::create_network_hashmap(&jo);
 
-
         make_nested(&jo, & mut network);
-
         connect_bubbles(&network,  result, &k);
 
     }
 }
 
 
+/// Conntect bubbles and add children and parents
 pub fn connect_bubbles(hm: &HashMap<(u32, u32), Network>, result: & mut BubbleWrapper, s: &String){
-
-
-
     for (k,v) in hm.iter(){
-
-
         let index = result.id2id.get(&(k.0, k.1, s)).unwrap();
         let mut ii: Vec<&u32> = Vec::new();
         for x in v.parent.iter(){
             ii.push(result.id2id.get(&(x.0, x.1, s)).unwrap());
         }
-
-
-
         for x in ii.iter(){
             result.id2bubble.get_mut(x).unwrap().children.insert(index.clone());
             result.id2bubble.get_mut(index).unwrap().parents.insert(x.clone().clone());

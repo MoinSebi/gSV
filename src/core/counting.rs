@@ -1,5 +1,4 @@
 use std::collections::{HashMap, HashSet};
-use gfaR::Gfa;
 use gfaR_wrapper::NGfa;
 
 

@@ -4,14 +4,14 @@ mod core;
 #[allow(non_snake_case)]
 mod panSV;
 use crate::core::counting::{counting_nodes, CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, writing_bed, writing_traversals};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection};
 use crate::core::graph_helper::graph2pos;
-use crate::core::core::{naming_wrapper};
 use clap::{Arg, App};
 use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::OldNaming;
 use gfaR_wrapper::NGfa;
+use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure};
 
 
 fn main() {
@@ -34,6 +34,10 @@ fn main() {
             .short('t')
             .long("traversal")
             .about("Additional traversal file as output"))
+        .arg(Arg::new("old naming")
+            .short('n')
+            .long("naming")
+            .about("Change the naming"))
 
         .get_matches();
 
@@ -76,20 +80,11 @@ fn main() {
 
 
     println!("PanSV running");
-    let (o,m) = algo_panSV(&graph.paths, &gg);
+    let (o,_m) = algo_panSV(&graph.paths, &gg);
     let h = graph2pos(&graph);
     println!("Creating bubbles");
     let mut gg = create_bubbles(&o, &graph.paths, &h);
-    //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
 
-    let mut j = 0;
-    for (k,v) in gg.id2bubble.iter(){
-        if v.parents.len() > 1{
-            j += 1;
-            //println!("{:?}", v);
-        }
-    }
-    print!("jj {}", j);
 
     println!("Indel detection");
     let interval_numb = gg.id2interval.len() as u32;
@@ -98,20 +93,24 @@ fn main() {
     let mut jj = OldNaming::new();
 
 
-    println!("Writing bed");
-    naming_wrapper(& gg.id2bubble, &(graph.paths.len() as u32), outpre,  &mut jj.hm);
     println!("Writing stats");
-    writing_bed(& gg, &h, &m, outpre);
+    if matches.is_present("old naming"){
+        bubble_naming_old(&gg.id2bubble, & mut jj.hm, outpre, &(graph.paths.len() as u32));
+    } else {
+        bubble_naming_new(&gg.id2bubble, outpre);
+        bubble_parent_structure(&gg.id2bubble, outpre);
+    }
+
+
+
+    println!("Writing bed");
+    writing_bed(& gg, &h, outpre);
 
 
     if matches.is_present("traversal"){
         println!("Writing traversal");
-        writing_traversals(&gg, &jj, outpre);
+        writing_traversals(&gg, outpre);
     }
 
 
-}
-
-fn running(){
-    println!("Jdkjasdhsakjd");
 }
