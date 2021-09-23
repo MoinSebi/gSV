@@ -82,6 +82,15 @@ fn main() {
     let mut gg = create_bubbles(&o, &graph.paths, &h);
     //let jo = gg.id2interval.keys().into_iter().max().unwrap().clone();
 
+    let mut j = 0;
+    for (k,v) in gg.id2bubble.iter(){
+        if v.parents.len() > 1{
+            j += 1;
+            //println!("{:?}", v);
+        }
+    }
+    print!("jj {}", j);
+
     println!("Indel detection");
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);

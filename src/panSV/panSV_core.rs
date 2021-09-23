@@ -7,7 +7,6 @@ pub struct PanSVpos {
     pub start:  u32,
     pub end:  u32,
     pub core: u32,
-    pub border: bool,
 }
 
 /// For interval_open ->
@@ -15,8 +14,9 @@ pub struct TmpPos {
     pub acc:  String,
     pub start:  u32,
     pub core:  u32,
-    pub border: bool,
 }
+
+
 
 pub struct OldNaming {
     pub hm: HashMap<u32, Vec<u32>>,

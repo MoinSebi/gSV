@@ -10,7 +10,6 @@ pub struct Posindex {
     pub from:  u32,
     pub to:   u32,
     pub acc:  String,
-    pub border: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -21,7 +20,6 @@ pub struct Bubble {
     pub children: HashSet<u32>,
     pub parents: HashSet<u32>,
     pub traversals: HashMap<Vec<(u32, bool)>, Traversal>,
-    pub border: bool,
     // this is kinda panSV specific
     pub core: u32,
     pub old_names: Vec<u32>,
@@ -32,7 +30,7 @@ pub struct Bubble {
 
 impl Bubble {
     /// Bubble constructor
-    pub fn new(core: u32, start: u32, end: u32, first:u32, i: u32, trav: Traversal, s : Vec<(u32, bool)>, border: bool) -> Self{
+    pub fn new(core: u32, start: u32, end: u32, first:u32, i: u32, trav: Traversal, s : Vec<(u32, bool)>) -> Self{
         let mut u: Vec<u32> = Vec::new();
         u.push(first);
         let u2: HashSet<u32> = HashSet::new();
@@ -48,7 +46,6 @@ impl Bubble {
             id: i,
             traversals: u4,
             core: core,
-            border: border.clone(),
             old_names: name,
 
         }
@@ -106,7 +103,10 @@ impl Bubble {
 }
 
 
-
+/// Naming bubbles pre Rust
+///
+/// Requirement: Bubbles can only have one parent
+/// But: This is not the case in panSV
 pub fn bubble_naming_old(hm1: & HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32, maxcore: &u32, number: &u32, buff: & mut BufWriter<File>, naming: & mut HashMap<u32, Vec<u32>>){
     let bubble = hm1.get (& nodeid).unwrap();
     let core = bubble.core;
@@ -124,7 +124,7 @@ pub fn bubble_naming_old(hm1: & HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32
     let j:Vec<String> = h2.iter().map(|i| i.to_string()).collect();
     naming.insert(bubble.id.clone(), h2.clone());
     let (max, min ,mean) = bubble.traversal_stats();
-    write!(*buff, "{}\t{}\t{}\t{}\t{}\t{:.2}\t{}\t{}\t\n",
+    write!(*buff, "{}\t{}\t{}\t{}\t{}\t{:.2}\t{}\t{}\t{}\t{}\n",
            j.join("."),
            bubble.core,
            bubble.children.len(),
@@ -133,6 +133,8 @@ pub fn bubble_naming_old(hm1: & HashMap<u32, Bubble>, s: &Vec<u32>, nodeid: &u32
             mean,
            bubble.traversals.len(),
            bubble.number_interval(),
+        bubble.start,
+        bubble.end,
 
     ).expect("Can not write file");
 
@@ -179,6 +181,22 @@ pub fn naming_wrapper(hm1: & HashMap<u32, Bubble>, maxcore: &u32, out: &str, nam
 
             it += 1;
         }
+    }
+}
+
+
+
+pub fn naming_new(hm1: & HashMap<u32, Bubble>){
+
+    for (k,v) in hm1.iter(){
+        let (max, min ,mean) = v.traversal_stats();
+        println!("{}\n{}\n{}\n{}\n{}\n{}\n{}\n{}", v.id, v.core, v.children.len(), max, min, mean, v.traversals.len(), v.number_interval());
+    }
+}
+
+pub fn parent_structure(hm1: & HashMap<u32, Bubble>){
+    for (k,v) in hm1.iter(){
+        println!("{}\n{:?}\n{:?}", v.id, v.children, v.parents)
     }
 }
 
