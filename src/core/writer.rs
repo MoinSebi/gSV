@@ -2,7 +2,7 @@ use crate::core::core::Bubble;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{Write, BufWriter};
-use crate::panSV::panSV_core::{BubbleWrapper, OldNaming};
+use crate::panSV::panSV_core::{BubbleWrapper};
 use crate::core::helper::{bool2string_dir, hashset2string};
 
 /// Naming bubbles with ids

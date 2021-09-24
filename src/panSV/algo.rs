@@ -5,8 +5,6 @@ use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
 use gfaR_wrapper::NPath;
 use std::io::{self, Write};
-use std::thread::sleep;
-use std::{thread, time};
 
 
 #[allow(non_snake_case)]
@@ -43,7 +41,6 @@ pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, V
 
         print!("({}/{}) {}\r", i+1, paths.len(), x.name);
         io::stdout().flush().unwrap();
-        thread::sleep(time::Duration::from_millis(200));
         // Iterate over all nodes
         for (index, node) in x.nodes.iter().enumerate() {
 
@@ -288,7 +285,6 @@ pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  m
     for (i ,(k,v)) in hm.iter().enumerate(){
 
         print!("({}/{}) {}\r", i+1, hm.len(), k);
-        thread::sleep(time::Duration::from_millis(2000));
         io::stdout().flush().unwrap();
 
         let mut jo: Vec<(u32, u32)> = Vec::new();
