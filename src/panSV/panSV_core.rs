@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, BTreeSet};
 use crate::core::core::{Bubble, Posindex};
 
 
@@ -35,7 +35,8 @@ pub struct BubbleWrapper<'a>{
     pub id2bubble: HashMap<u32, Bubble>,
     pub id2interval: HashMap<u32, Posindex>,
 
-    pub anchor2bubble: HashMap<(&'a  u32, &'a u32), u32>,
+    // change this
+    pub anchor2bubble: HashMap<BTreeSet<&'a u32>, u32>,
     pub anchor2interval: HashMap<(&'a  u32, &'a  u32,&'a String), u32>,
     pub id2id: HashMap<(u32, u32, &'a  String), u32>,
 
@@ -45,7 +46,7 @@ impl BubbleWrapper<'_>{
     pub fn new() -> Self {
         let id2bubble: HashMap<u32, Bubble> = HashMap::new();
         let id2interval: HashMap<u32, Posindex> = HashMap::new();
-        let anchor2bubble: HashMap<(& u32, & u32), u32> = HashMap::new();
+        let anchor2bubble: HashMap<BTreeSet<& u32>, u32> = HashMap::new();
         let anchor2interval: HashMap<(& u32, & u32, & String), u32> = HashMap::new();
         let id2id: HashMap<(u32, u32, & String), u32> = HashMap::new();
 

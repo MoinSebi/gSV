@@ -1,4 +1,4 @@
-use std::collections::{HashMap};
+use std::collections::{HashMap, BTreeSet};
 use crate::core::counting::{CountNode};
 use crate::panSV::panSV_core::{PanSVpos, TmpPos, BubbleWrapper};
 use crate::core::core::{Posindex, Bubble, Traversal};
@@ -147,7 +147,9 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
         for pos in inp[&x.name].iter(){
 
-            let newbub = (& x.nodes[pos.start as usize], & x.nodes[pos.end as usize]);
+            let mut newbub = BTreeSet::new();
+            newbub.insert(& x.nodes[pos.start as usize]);
+            newbub.insert(& x.nodes[pos.end as usize]);
             let len_trav: usize  = ghm.get(&x.name).unwrap()[pos.end as usize-1] -  ghm.get(&x.name).unwrap()[pos.start as usize];
 
             let tt = Traversal{length: len_trav as u32, pos: vec![tcount]};
@@ -250,6 +252,9 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
     for path in paths.iter(){
         for x in 0..path.nodes.len()-1{
             let ind = (&path.nodes[x], &path.nodes[x+1]);
+            let mut ind = BTreeSet::new();
+            ind.insert(&path.nodes[x]);
+            ind.insert(&path.nodes[x+1]);
             if r.anchor2bubble.contains_key(&ind){
 
                 let bub =  r.id2bubble.get_mut(r.anchor2bubble.get(&ind).unwrap()).unwrap();

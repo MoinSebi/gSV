@@ -4,6 +4,7 @@ use std::fs::File;
 use std::io::{Write, BufWriter};
 use crate::panSV::panSV_core::{BubbleWrapper};
 use crate::core::helper::{bool2string_dir, hashset2string};
+use std::fs;
 
 /// Naming bubbles with ids
 ///
@@ -23,8 +24,8 @@ pub fn bubble_naming_new(hm1: & HashMap<u32, Bubble>, out: &str){
            "#traversal",
            "#intervals",
            "Parents",
-            "Start",
-            "End").expect("Can not write stats file");
+            "Anchor1",
+            "Anchor2").expect("Can not write stats file");
     for (_k,v) in hm1.iter(){
         let (max, min ,mean) = v.traversal_stats();
         write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.id, v.core, v.children.len(), min, max, mean, v.traversals.len(), v.number_interval(), hashset2string(&v.parents, ","), v.start, v.end).expect("Not able to write bubble stats");
