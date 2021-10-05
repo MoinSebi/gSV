@@ -39,8 +39,9 @@ pub fn bubble_naming_new(hm1: & HashMap<u32, Bubble>, out: &str){
 pub fn bubble_parent_structure(hm1: & HashMap<u32, Bubble>, out: &str){
     let f = File::create([out, "bubble", "txt"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
+    rite!(f, "bubble_id\tchildren_id\tparents_id", v.id, v.children, v.parents)
     for (_k,v) in hm1.iter(){
-        write!(f, "{}\n{:?}\n{:?}", v.id, v.children, v.parents).expect("Not able to write bubble nestedness file");
+        write!(f, "{}\t{:?}\t{:?}", v.id, v.children, v.parents).expect("Not able to write bubble nestedness file");
     }
 }
 
