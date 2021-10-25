@@ -3,6 +3,11 @@ use std::hash::Hash;
 
 
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
+/// Positional information for each interval
+/// From: starting index
+/// To: end index
+/// Acc: Accession
+/// Comment: Might use a reference here
 pub struct Posindex {
     pub from:  u32,
     pub to:   u32,
@@ -10,6 +15,13 @@ pub struct Posindex {
 }
 
 #[derive(Debug, Clone)]
+/// Bubbles have a start and stop node (stored by node id)
+/// Additional information
+/// - ID
+/// - Children (list of bubble ids)
+/// - Parents (list of bubble ids)
+/// - traversal ("Unique" order of nodes between start and end)
+/// - Core (Core level)
 pub struct Bubble {
     pub start: u32,
     pub end: u32,
@@ -46,8 +58,6 @@ impl Bubble {
     }
 
     /// Mean, max and min length of all traversals
-    ///
-    /// ??? Changing
     pub fn traversal_stats(&self) -> (u32, u32, f32){
         let mut all_length = Vec::new();
         for (_k,v) in self.traversals.iter(){

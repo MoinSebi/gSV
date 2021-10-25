@@ -11,7 +11,7 @@ use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::OldNaming;
 use gfaR_wrapper::{NGfa, GraphWrapper};
-use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed};
+use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals};
 
 
 fn main() {
@@ -94,11 +94,11 @@ fn main() {
         h.fromNGfa(&graph, matches.value_of("delimiter").unwrap());
         eprintln!("{} Genomes and {} Paths", h.genomes.len(), graph.paths.len());
         println!("Counting nodes");
-        counts.from_genomes(&graph, &h);
+        counts.counting_wrapper(&graph, &h);
     } else {
         eprintln!("{} Genomes and {} Paths", graph.paths.len(), graph.paths.len());
         println!("Counting nodes");
-        counts.all_path(&graph);
+        counts.counting_graph(&graph);
     }
 
     // test
@@ -127,6 +127,7 @@ fn main() {
 
     println!("Writing bed");
     writing_bed(& gg, &h, outpre);
+    writing_bed_traversals(&gg, &h, outpre);
 
 
     if matches.is_present("traversal"){
@@ -139,6 +140,57 @@ fn main() {
         writing_uniques_bed(&gg, &h, outpre , 10);
     }
 
+
+
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::core::writer::writing_bed_traversals;
+
+    #[test]
+    fn counting() {
+        let mut graph: NGfa = NGfa::new();
+        graph.from_graph("example_data/testGraph.gfa");
+        let mut counts: CountNode = CountNode::new();
+        counts.counting_graph(&graph);
+        assert_eq!(counts.ncount.len(), 9);
+        assert_eq!(counts.ncount.contains_key(&1), true);
+
+    }
+
+    #[test]
+    fn detection() {
+        let mut graph: NGfa = NGfa::new();
+        graph.from_graph("example_data/testGraph.gfa");
+        let mut counts: CountNode = CountNode::new();
+        counts.counting_graph(&graph);
+        let (o,_m) = algo_panSV(&graph.paths, &counts);
+        let h = graph2pos(&graph);
+        let mut gg = create_bubbles(&o, &graph.paths, &h);
+        let interval_numb = gg.id2interval.len() as u32;
+        indel_detection(& mut gg, &graph.paths, interval_numb);
+    }
+
+    #[test]
+    fn writing() {
+        let mut graph: NGfa = NGfa::new();
+        graph.from_graph("example_data/testGraph.gfa");
+        let mut counts: CountNode = CountNode::new();
+        counts.counting_graph(&graph);
+        let (o,_m) = algo_panSV(&graph.paths, &counts);
+        let h = graph2pos(&graph);
+        let mut gg = create_bubbles(&o, &graph.paths, &h);
+        let interval_numb = gg.id2interval.len() as u32;
+        indel_detection(& mut gg, &graph.paths, interval_numb);
+        bubble_naming_new(&gg.id2bubble, "example_data/panSV_test");
+        bubble_parent_structure(&gg.id2bubble, "example_data/panSV_test");
+        writing_traversals(&gg, "example_data/panSV_test");
+        writing_uniques_bed(&gg, &h, "example_data/panSV_test" , 10);
+        writing_bed(& gg, &h, "example_data/panSV_test");
+        writing_bed_traversals(&gg, &h, "example_data/panSV_test");
+    }
 
 
 }

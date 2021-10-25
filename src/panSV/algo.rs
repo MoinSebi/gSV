@@ -272,7 +272,6 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
                     bub.traversals.get_mut(&k).unwrap().pos.push(ll);
                 } else {
                     bub.traversals.insert(k.clone(), jo);
-                    bub.traversals.get_mut(&k).unwrap().pos.push(ll);
                 }
                 ll += 1;
 

@@ -38,9 +38,9 @@ pub fn bubble_naming_new(hm1: & HashMap<u32, Bubble>, out: &str){
 pub fn bubble_parent_structure(hm1: & HashMap<u32, Bubble>, out: &str){
     let f = File::create([out, "bubble", "txt"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
-    write!(f, "bubble_id\tchildren_id\tparents_id").expect("Not able to write bubble nestedness file");
+    write!(f, "bubble_id\tchildren_id\tparents_id\n").expect("Not able to write bubble nestedness file");
     for (_k,v) in hm1.iter(){
-        write!(f, "{}\t{:?}\t{:?}", v.id, v.children, v.parents).expect("Not able to write bubble nestedness file");
+        write!(f, "{}\t{:?}\t{:?}\n", v.id, v.children, v.parents).expect("Not able to write bubble nestedness file");
     }
 }
 
@@ -163,6 +163,35 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out
     }
 }
 
+
+///
+pub fn writing_bed_traversals(h: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out: &str){
+    let f = File::create([out, "traversal", "bed"].join(".")).expect("Unable to create file");
+    let mut f = BufWriter::new(f);
+    println!("{:?}", h.id2bubble);
+    for x in h.id2bubble.iter(){
+        println!("bubble {}", x.0);
+        for y in x.1.traversals.iter(){
+            for x1 in y.1.pos.iter(){
+
+                let k = h.id2interval.get(&x1).unwrap();
+                let from_id: usize = index2.get(&k.acc).unwrap()[k.from as usize];
+                let mut to_id:usize = index2.get(&k.acc).unwrap()[k.to as usize-1];
+                if k.to == k.from+1{
+                    to_id = from_id.clone();
+                }
+                let bub = h.id2bubble.get(h.id2id.get(&(k.from, k.to, &k.acc)).unwrap()).unwrap();
+                write!(f, "{}\t{}\t{}\t{}\t{}\t{}\n", k.acc, from_id, to_id, bub.id, bub.core, y.1.id).expect("Can't write traversal file");
+                println!("{}\t{}\t{}\t{}\t{}\t{}\n", k.acc, from_id, to_id, bub.id, bub.core, y.1.id);
+            }
+
+
+        }
+    }
+}
+
+
+
 /// Writing traversal file
 /// Printing:
 /// traversal Len bubble
@@ -193,7 +222,7 @@ pub fn writing_traversals(h: &BubbleWrapper, out: &str){
 /// traversal Len bubble
 ///
 pub fn writing_uniques_bed(h: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out: &str, size: usize){
-    let f = File::create([out, "traversal", "bed"].join(".")).expect("Unable to create file");
+    let f = File::create([out, "traversal", "unique", "bed"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
     for x in h.id2bubble.iter(){
 
