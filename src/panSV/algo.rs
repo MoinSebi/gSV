@@ -138,6 +138,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
     let mut tcount = 0;
     let mut bcount = 0;
+    let mut trcount = 0;
 
     for (i,x) in p.iter().enumerate(){
 
@@ -152,7 +153,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
             newbub.insert(& x.nodes[pos.end as usize]);
             let len_trav: usize  = ghm.get(&x.name).unwrap()[pos.end as usize-1] -  ghm.get(&x.name).unwrap()[pos.start as usize];
 
-            let tt = Traversal{length: len_trav as u32, pos: vec![tcount]};
+            let tt = Traversal{length: len_trav as u32, pos: vec![tcount], id: 0};
             let k: Vec<u32> = x.nodes[(pos.start+1) as usize..pos.end as usize].iter().cloned().collect();
             let k2: Vec<bool> = x.dir[(pos.start+1) as usize..pos.end as usize].iter().cloned().collect();
 
@@ -189,7 +190,9 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
                 }
                 else {
 
-                    result.id2bubble.get_mut(temp_bcount).unwrap().traversals.insert(k10,tt);
+                    result.id2bubble.get_mut(temp_bcount).unwrap().traversals.insert(k10.clone(),tt);
+                    result.id2bubble.get_mut(temp_bcount).unwrap().traversals.get_mut(&k10).unwrap().id = trcount;
+                    trcount += 1;
                     //pV.id2bubble.get_mut(temp_bcount).unwrap().traversals.insert(k,tt);
 
                 }
@@ -216,10 +219,12 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
                 result.anchor2bubble.insert(newbub, bcount);
                 result.id2bubble.insert(bcount, Bubble::new(pos.core.clone(), x.nodes[pos.start as usize].clone(), x.nodes[pos.end as usize].clone(),
-                                                            tcount, bcount, tt, k10));
+                                                            tcount, bcount, tt, k10.clone()));
+                result.id2bubble.get_mut(&bcount).unwrap().traversals.get_mut(&k10).unwrap().id = trcount;
+
                 result.anchor2interval.insert((&pos.start, &pos.end, &x.name), tcount);
                 result.id2id.insert((pos.start.clone(), pos.end.clone(), &x.name), bcount);
-
+                trcount += 1;
 
 
 
@@ -251,7 +256,6 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
 
     for path in paths.iter(){
         for x in 0..path.nodes.len()-1{
-            let ind = (&path.nodes[x], &path.nodes[x+1]);
             let mut ind = BTreeSet::new();
             ind.insert(&path.nodes[x]);
             ind.insert(&path.nodes[x+1]);

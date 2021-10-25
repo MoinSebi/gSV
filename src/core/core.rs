@@ -101,10 +101,17 @@ impl Bubble {
 
 
 
+
+
 #[derive(Hash, Eq, PartialEq, Debug, Clone)]
+/// Traversal a unique connections between two specific bubbles
+/// Contains:
+/// - sequence length
+/// - list of traversal ids
 pub struct Traversal {
     pub length: u32, // Sequence length
     pub pos: Vec<u32>,
+    pub id: u32,
 }
 
 impl  Traversal{
@@ -127,6 +134,7 @@ impl  Traversal{
         Self{
             length: lens,
             pos: k,
+            id: 0
         }
     }
 

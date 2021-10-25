@@ -11,7 +11,7 @@ use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::OldNaming;
 use gfaR_wrapper::{NGfa, GraphWrapper};
-use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure};
+use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed};
 
 
 fn main() {
@@ -45,6 +45,10 @@ fn main() {
             .long("delimiter")
             .about("Delimiter for between genome and chromosome")
             .takes_value(true))
+        .arg(Arg::new("unique")
+            .short('u')
+            .long("unique")
+            .about("return a bed file with only unique sequences for each bubble"))
 
 
 
@@ -129,6 +133,12 @@ fn main() {
         println!("Writing traversal");
         writing_traversals(&gg, outpre);
     }
+
+    if matches.is_present("unique"){
+        println!("Writing traversal");
+        writing_uniques_bed(&gg, &h, outpre , 10);
+    }
+
 
 
 }
