@@ -48,7 +48,8 @@ fn main() {
         .arg(Arg::new("unique")
             .short('u')
             .long("unique")
-            .about("return a bed file with only unique sequences for each bubble"))
+            .about("return a bed file with only unique sequences for each bubble")
+            .takes_value(true))
 
 
 
@@ -137,7 +138,8 @@ fn main() {
 
     if matches.is_present("unique"){
         eprintln!("Writing traversal");
-        writing_uniques_bed(&gg, &h, outpre , 10);
+        let size: usize = matches.value_of("unique").unwrap().parse().unwrap();
+        writing_uniques_bed(&gg, &h, outpre , size);
     }
 
 
@@ -187,7 +189,7 @@ mod tests {
         bubble_naming_new(&gg.id2bubble, "example_data/panSV_test");
         bubble_parent_structure(&gg.id2bubble, "example_data/panSV_test");
         writing_traversals(&gg, "example_data/panSV_test");
-        writing_uniques_bed(&gg, &h, "example_data/panSV_test" , 10);
+        writing_uniques_bed(&gg, &h, "example_data/panSV_test" , 50);
         writing_bed(& gg, &h, "example_data/panSV_test");
         writing_bed_traversals(&gg, &h, "example_data/panSV_test");
     }
