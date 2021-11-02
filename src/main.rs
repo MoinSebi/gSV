@@ -93,11 +93,11 @@ fn main() {
         let mut h: GraphWrapper = GraphWrapper::new();
         h.fromNGfa(&graph, matches.value_of("delimiter").unwrap());
         eprintln!("{} Genomes and {} Paths", h.genomes.len(), graph.paths.len());
-        println!("Counting nodes");
+        eprintln!("Counting nodes");
         counts.counting_wrapper(&graph, &h);
     } else {
         eprintln!("{} Genomes and {} Paths", graph.paths.len(), graph.paths.len());
-        println!("Counting nodes");
+        eprintln!("Counting nodes");
         counts.counting_graph(&graph);
     }
 
@@ -108,14 +108,14 @@ fn main() {
     let mut gg = create_bubbles(&o, &graph.paths, &h);
 
 
-    println!("\nIndel detection");
+    eprintln!("\nIndel detection");
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
 
     let mut jj = OldNaming::new();
 
 
-    println!("Writing stats");
+    eprintln!("Writing stats");
     if matches.is_present("old naming"){
         bubble_naming_old(&gg.id2bubble, & mut jj.hm, outpre, &(graph.paths.len() as u32));
     } else {
@@ -125,18 +125,18 @@ fn main() {
 
 
 
-    println!("Writing bed");
+    eprintln!("Writing bed");
     writing_bed(& gg, &h, outpre);
     writing_bed_traversals(&gg, &h, outpre);
 
 
     if matches.is_present("traversal"){
-        println!("Writing traversal");
+        eprintln!("Writing traversal");
         writing_traversals(&gg, outpre);
     }
 
     if matches.is_present("unique"){
-        println!("Writing traversal");
+        eprintln!("Writing traversal");
         writing_uniques_bed(&gg, &h, outpre , 10);
     }
 

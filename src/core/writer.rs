@@ -168,9 +168,7 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out
 pub fn writing_bed_traversals(h: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out: &str){
     let f = File::create([out, "traversal", "bed"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
-    println!("{:?}", h.id2bubble);
     for x in h.id2bubble.iter(){
-        println!("bubble {}", x.0);
         for y in x.1.traversals.iter(){
             for x1 in y.1.pos.iter(){
 
@@ -182,7 +180,6 @@ pub fn writing_bed_traversals(h: &BubbleWrapper, index2: & HashMap<String, Vec<u
                 }
                 let bub = h.id2bubble.get(h.id2id.get(&(k.from, k.to, &k.acc)).unwrap()).unwrap();
                 write!(f, "{}\t{}\t{}\t{}\t{}\t{}\n", k.acc, from_id, to_id, bub.id, bub.core, y.1.id).expect("Can't write traversal file");
-                println!("{}\t{}\t{}\t{}\t{}\t{}\n", k.acc, from_id, to_id, bub.id, bub.core, y.1.id);
             }
 
 
