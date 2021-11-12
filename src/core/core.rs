@@ -32,6 +32,10 @@ pub struct Bubble {
     // this is kinda panSV specific
     pub core: u32,
 
+    // Classification
+    pub small: bool,
+    pub ratio: f32,
+
 
 }
 
@@ -45,6 +49,7 @@ impl Bubble {
         let u3: HashSet<u32> = HashSet::new();
         let mut u4: HashMap<Vec<(u32, bool) >, Traversal> = HashMap::new();
         u4.insert(s, trav);
+
         Self {
             start: start,
             end: end,
@@ -53,6 +58,8 @@ impl Bubble {
             id: i,
             traversals: u4,
             core: core,
+            small: true,
+            ratio: 0.0,
 
         }
     }

@@ -113,6 +113,8 @@ fn main() {
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
 
+
+
     let mut jj = OldNaming::new();
 
 
@@ -150,6 +152,7 @@ fn main() {
 mod tests {
     use super::*;
     use crate::core::writer::writing_bed_traversals;
+    use crate::panSV::algo::check_bubble_size;
 
     #[test]
     fn counting() {
@@ -173,6 +176,8 @@ mod tests {
         let mut gg = create_bubbles(&o, &graph.paths, &h);
         let interval_numb = gg.id2interval.len() as u32;
         indel_detection(& mut gg, &graph.paths, interval_numb);
+        println!("djaskdjakjdkasjsdsa");
+        check_bubble_size(&mut gg);
     }
 
     #[test]

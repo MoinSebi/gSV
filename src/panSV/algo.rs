@@ -324,3 +324,33 @@ pub fn connect_bubbles(hm: &HashMap<(u32, u32), Network>, result: & mut BubbleWr
     }
 
 }
+
+/// Checking bubble size
+/// TODO
+/// - Categories (additional function)
+/// -
+pub fn check_bubble_size(h: & mut BubbleWrapper){
+    let k: Vec<u32> = h.id2bubble.keys().copied().collect();
+    println!("k is {:?}", k);
+    for x in k.iter(){
+        let mut min = u32::MAX;
+
+        let mut max = u32::MIN;
+        let bubble = h.id2bubble.get_mut(x).unwrap();
+        for x in bubble.traversals.iter() {
+            println!("{}", x.1.length);
+            if x.1.length > max {
+                max = x.1.length.clone();
+            }
+            if x.1.length < min {
+                min = x.1.length.clone();
+            }
+        }
+
+        bubble.ratio = (min as f32/max as f32);
+        println!("RATIO {}", bubble.ratio);
+        if max > 50{
+            bubble.small = true;
+        }
+    }
+}
