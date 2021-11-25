@@ -37,7 +37,7 @@ pub struct Bubble {
     pub ratio: f32,
     pub category: u8,
 
-    // 0 = SNP, 1 = MNP, 2 = INDEL || 3 = INDEL, 4 = DifferentSize, 5 = SameSize
+    // 0 = SNP, 1 = INDEL, 2 = MNP || 3 = INDEL, 4 = DifferentSize, 5 = SameSize
 
 
 }
