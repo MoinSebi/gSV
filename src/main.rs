@@ -4,7 +4,7 @@ mod core;
 #[allow(non_snake_case)]
 mod panSV;
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App};
 use std::path::Path;
@@ -112,7 +112,7 @@ fn main() {
     eprintln!("\nIndel detection");
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
-
+    check_bubble_size(&mut gg);
 
 
     let mut jj = OldNaming::new();
@@ -178,6 +178,8 @@ mod tests {
         indel_detection(& mut gg, &graph.paths, interval_numb);
         println!("djaskdjakjdkasjsdsa");
         check_bubble_size(&mut gg);
+        bubble_naming_new(&gg.id2bubble, "example_data/panSV_test2");
+
     }
 
     #[test]

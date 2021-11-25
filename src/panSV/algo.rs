@@ -347,10 +347,29 @@ pub fn check_bubble_size(h: & mut BubbleWrapper){
             }
         }
 
-        bubble.ratio = (min as f32/max as f32);
-        println!("RATIO {}", bubble.ratio);
+
+        bubble.ratio = min as f32/max as f32;
         if max > 50{
             bubble.small = true;
+            if (min == 1) & (max == 1){
+                bubble.category = 0;
+            }
+            else if min == 1{
+                bubble.category = 1;
+            }
+            else {
+                bubble.category = 2;
+            }
+        } else {
+            if min == 0{
+                bubble.category = 3;
+            } else if bubble.ratio > 0.8 {
+                bubble.category = 4;
+            } else {
+                bubble.category = 5;
+            }
         }
+
     }
+
 }
