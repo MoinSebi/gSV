@@ -112,6 +112,8 @@ fn main() {
     eprintln!("\nIndel detection");
     let interval_numb = gg.id2interval.len() as u32;
     indel_detection(& mut gg, &graph.paths, interval_numb);
+
+    eprintln!("\nCategorize bubbles");
     check_bubble_size(&mut gg);
 
 
