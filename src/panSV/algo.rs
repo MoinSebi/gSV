@@ -337,7 +337,6 @@ pub fn check_bubble_size(h: & mut BubbleWrapper){
         let mut max = u32::MIN;
         let bubble = h.id2bubble.get_mut(x).unwrap();
         for x in bubble.traversals.iter() {
-            println!("{}", x.1.length);
             if x.1.length > max {
                 max = x.1.length.clone();
             }
