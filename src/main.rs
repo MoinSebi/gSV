@@ -3,6 +3,8 @@
 mod core;
 #[allow(non_snake_case)]
 mod panSV;
+mod bifurcation;
+
 use crate::core::counting::{CountNode};
 use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size};
 use crate::core::graph_helper::graph2pos;
