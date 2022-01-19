@@ -156,14 +156,16 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out
             to_id = from_id.clone();
         }
         let bub = r.id2bubble.get(r.id2id.get(&(v.from, v.to, &v.acc)).unwrap()).unwrap();
-
-        write!(f, "{}\t{}\t{}\t{}\t{}\t{}\n",
+        let (max, min ,mean) = bub.traversal_stats();
+        write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n",
                v.clone().acc,
                from_id,
                to_id,
                bub.id,
                bub.core,
-                bub.category).expect("Not able to write to file");
+                bub.category,
+                max,
+                min,).expect("Not able to write to file");
     }
 }
 
