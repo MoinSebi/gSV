@@ -214,7 +214,7 @@ pub fn writing_traversals(h: &BubbleWrapper, out: &str){
             }
 
             //write!(f, "{}\t{}\t{}\n", o.join(","), y.1.length, vec2string(&naming.hm.get(&x.1.id).unwrap(), ".")).expect("Can't write traversal file");
-            write!(f, "{}\t{}\t{}\n", o.join(","), y.1.length, x.1.id).expect("Can't write traversal file");
+            write!(f, "{}\t{}\t{}\n", o.join(","), y.1.length, y.1.id).expect("Can't write traversal file");
 
         }
     }
