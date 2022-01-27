@@ -8,7 +8,7 @@ mod bifurcation;
 use crate::core::counting::{CountNode};
 use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size};
 use crate::core::graph_helper::graph2pos;
-use clap::{Arg, App};
+use clap::{Arg, App, AppSettings};
 use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::OldNaming;
@@ -18,6 +18,7 @@ use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bu
 
 fn main() {
     let matches = App::new("panSV")
+        .setting(AppSettings::ArgRequiredElseHelp)
         .version("0.1.0")
         .author("Sebastian V")
         .about("Bubble detection")

@@ -5,8 +5,8 @@ use std::io::{Write, BufWriter};
 use crate::panSV::panSV_core::{BubbleWrapper};
 use crate::core::helper::{bool2string_dir, hashset2string};
 
-/// Naming bubbles with ids
-///
+/// Write bubbles with unique id
+/// Read doc/bubble.stats
 /// Difference to "bubble_naming_old"
 /// - no complex naming (no recursion)
 /// - additional file for "parent ids"
@@ -81,7 +81,7 @@ pub fn bubble_naming_old(hm1: & HashMap<u32, Bubble>, naming: & mut HashMap<u32,
 }
 
 /// Naming bubbles pre Rust
-///
+/// Only needed for bubble_naming_old
 /// Requirement: Bubbles can only have one parent
 /// But: This is not the case in panSV
 /// Changed stuff: No multiple names anymore
@@ -171,7 +171,8 @@ pub fn writing_bed(r: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out
 }
 
 
-///
+/// Write bed file
+/// Documentation found here doc.md
 pub fn writing_bed_traversals(h: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out: &str){
     let f = File::create([out, "traversal", "bed"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
@@ -199,7 +200,6 @@ pub fn writing_bed_traversals(h: &BubbleWrapper, index2: & HashMap<String, Vec<u
 /// Writing traversal file
 /// Printing:
 /// traversal Len bubble
-///
 pub fn writing_traversals(h: &BubbleWrapper, out: &str){
     let f = File::create([out, "traversal", "txt"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);
@@ -224,7 +224,6 @@ pub fn writing_traversals(h: &BubbleWrapper, out: &str){
 /// Writing traversal file
 /// Printing:
 /// traversal Len bubble
-///
 pub fn writing_uniques_bed(h: &BubbleWrapper, index2: & HashMap<String, Vec<usize>>, out: &str, size: usize){
     let f = File::create([out, "traversal", "unique", "bed"].join(".")).expect("Unable to create file");
     let mut f = BufWriter::new(f);

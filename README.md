@@ -10,3 +10,6 @@ cargo build --release
 
 
 
+
+### Output
+[Documentation](doc.md)
