@@ -289,7 +289,7 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
 ///
 /// Running function for each path alone
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
-    println!("\nConnecting bubbbles");
+    println!("\nConnecting bubbles");
     let mut network: HashMap<(u32, u32), Network>;
     for (i ,(k,v)) in hm.iter().enumerate(){
 
