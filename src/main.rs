@@ -6,7 +6,7 @@ mod panSV;
 mod bifurcation;
 
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
@@ -118,7 +118,7 @@ fn main() {
 
     eprintln!("\nCategorize bubbles");
     check_bubble_size(&mut gg);
-
+    nest(& mut gg);
 
     let mut jj = OldNaming::new();
 
