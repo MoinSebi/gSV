@@ -27,10 +27,10 @@ pub fn bubble_naming_new(hm1: & HashMap<u32, Bubble>, out: &str){
             "Anchor2",
             "Ratio",
             "Small",
-            "Type").expect("Can not write stats file");
+            "Type", ).expect("Can not write stats file");
     for (_k,v) in hm1.iter(){
         let (max, min ,mean) = v.traversal_stats();
-        write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\n", v.id, v.core, v.children.len(), min, max, mean, v.traversals.len(), v.number_interval(), hashset2string(&v.parents, ","), v.start, v.end, v.ratio, v.small, v.category).expect("Not able to write bubble stats");
+        write!(f, "{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\t{}\tCL:{}\n", v.id, v.children.len(), min, max, mean, v.traversals.len(), v.number_interval(), hashset2string(&v.parents, ","), v.start, v.end, v.ratio, v.small, v.category, v.core).expect("Not able to write bubble stats");
     }
 }
 
