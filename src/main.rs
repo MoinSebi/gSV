@@ -157,7 +157,7 @@ fn main() {
 mod tests {
     use super::*;
     use crate::core::writer::writing_bed_traversals;
-    use crate::panSV::algo::check_bubble_size;
+    use crate::panSV::algo::{check_bubble_size, nest, check_nest};
 
     #[test]
     fn counting() {
@@ -183,6 +183,8 @@ mod tests {
         indel_detection(& mut gg, &graph.paths, interval_numb);
         println!("djaskdjakjdkasjsdsa");
         check_bubble_size(&mut gg);
+        nest(& mut gg);
+        check_nest(& mut gg);
         bubble_naming_new(&gg.id2bubble, "example_data/panSV_test2");
 
     }

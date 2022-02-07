@@ -5,6 +5,7 @@ use crate::core::core::{Posindex, Bubble, Traversal};
 use related_intervals::{make_nested, Network};
 use gfaR_wrapper::NPath;
 use std::io::{self, Write};
+use std::cmp::min;
 
 
 #[allow(non_snake_case)]
@@ -371,4 +372,49 @@ pub fn check_bubble_size(h: & mut BubbleWrapper){
 
     }
 
+}
+
+/// Wrapper for nestedness function
+pub fn nest(h: & mut BubbleWrapper){
+
+    let mut nest = 0;
+    for x in 0..h.id2bubble.len(){
+        let k = h.id2bubble.get_mut(&(x as u32)).unwrap();
+        if k.parents.len() == 0{
+            k.nestedness = 1;
+            let kk = k.children.clone();
+            for ok in kk.iter(){
+                nest2(h, &ok, 2);
+            }
+
+        }
+    }
+}
+
+
+/// Get nestedness functions
+pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
+    let k = h.id2bubble.get_mut(id).unwrap();
+    if k.nestedness != 0{
+        k.nestedness = min(k.nestedness, core)
+    } else {
+        k.nestedness = core
+    }
+    if k.children.len() > 0{
+        let kk = k.children.clone();
+        for x in kk.iter(){
+            nest2(h, &x, core +1)
+        }
+    }
+}
+
+
+/// Checking if all good
+pub fn check_nest(h: & mut BubbleWrapper){
+    for x in h.id2bubble.iter(){
+        if x.1.nestedness == 0{
+            eprintln!("{:?}", x);
+            eprintln!("THIS IS THE END");
+        }
+    }
 }

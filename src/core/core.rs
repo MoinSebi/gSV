@@ -36,6 +36,7 @@ pub struct Bubble {
     pub small: bool,
     pub ratio: f32,
     pub category: u8,
+    pub nestedness: u16,
 
     // 0 = SNP, 1 = INDEL, 2 = MNP || 3 = INDEL, 4 = DifferentSize, 5 = SameSize
 
@@ -63,7 +64,8 @@ impl Bubble {
             core: core,
             small: true,
             ratio: 0.0,
-            category: 0
+            category: 0,
+            nestedness: 0
 
         }
     }
