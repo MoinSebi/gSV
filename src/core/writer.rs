@@ -266,7 +266,7 @@ pub fn writing_uniques_bed_stats(h: &BubbleWrapper, index2: & HashMap<String, Ve
             }
             let mut o: Vec<String> = Vec::new();
             for x1 in y.0.iter(){
-                let j: String =  x.0.to_string() + &bool2string_dir(x1.1);
+                let j: String =  x1.0.to_string() + &bool2string_dir(x1.1);
                 o.push(j);
 
             }
