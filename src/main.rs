@@ -13,7 +13,7 @@ use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::OldNaming;
 use gfaR_wrapper::{NGfa, GraphWrapper};
-use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals};
+use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals, writing_uniques_bed_stats};
 
 
 fn main() {
@@ -147,6 +147,7 @@ fn main() {
         eprintln!("Writing traversal");
         let size: usize = matches.value_of("unique").unwrap().parse().unwrap();
         writing_uniques_bed(&gg, &h, outpre , size);
+        writing_uniques_bed_stats(&gg, &h, outpre , size);
     }
 
 
