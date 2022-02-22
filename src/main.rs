@@ -5,14 +5,16 @@ mod core;
 mod panSV;
 mod bifurcation;
 
+use std::collections::HashMap;
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest, sort_trav};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
 use std::process;
-use crate::panSV::panSV_core::OldNaming;
+use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
+use crate::bifurcation::algo::{create_bubbles2, test1};
 use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals};
 
 
@@ -35,6 +37,10 @@ fn main() {
             .about("Output prefix")
             .takes_value(true)
             .default_value("panSV.output"))
+        .arg(Arg::new("bifurcation")
+            .short('b')
+            .long("bifurction")
+            .about("bifurction mode"))
         .arg(Arg::new("traversal")
             .short('t')
             .long("traversal")
@@ -107,16 +113,28 @@ fn main() {
 
     // test
 
-    let (o,_m) = algo_panSV(&graph.paths, &counts);
-    let h = graph2pos(&graph);
-    let mut gg = create_bubbles(&o, &graph.paths, &h);
+    let mut gg: BubbleWrapper;
+    let mut h: HashMap<String, Vec<usize>>;
+    let mut i: HashMap<String, Vec<PanSVpos>>;
+    if matches.is_present("bifurction"){
+        let mut h1 = test1(&graph);
+        h = graph2pos(&graph);
+        eprintln!("hello123124213a");
+        i = sort_trav(h1);
+        gg = create_bubbles2(&i, & graph.paths, &h);
+    } else {
+        i = algo_panSV(&graph.paths, &counts).0;
+        h = graph2pos(&graph);
+        gg = create_bubbles(&i, &graph.paths, &h);
 
 
-    eprintln!("\nIndel detection");
-    let interval_numb = gg.id2interval.len() as u32;
-    indel_detection(& mut gg, &graph.paths, interval_numb);
+        eprintln!("\nIndel detection");
+        let interval_numb = gg.id2interval.len() as u32;
+        indel_detection(& mut gg, &graph.paths, interval_numb);
 
-    eprintln!("\nCategorize bubbles");
+        eprintln!("\nCategorize bubbles");
+    }
+
     check_bubble_size(&mut gg);
     nest(& mut gg);
 

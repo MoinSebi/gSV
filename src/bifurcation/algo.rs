@@ -54,7 +54,7 @@ use crate::panSV::algo::connect_bubbles_wrapper;
 use crate::panSV::panSV_core::{BubbleWrapper, PanSVpos};
 
 ///
-///
+/// test
 pub fn test1(graph: &NGfa) -> HashMap<String, Vec<PanSVpos>> {
     eprintln!("HIT");
 
