@@ -11,5 +11,6 @@ edition = "2018"
 #nested_intervals = {path = "/home/svorbrugg_local/Rust/nested_intervals"}
 related_intervals = "0.1.0"
 clap = "=3.0.0-beta.4"
-#gfaR_wrapper = {path = "/home/svorbrugg_local/Rust/gfaR_wrapper"}
 gfaR_wrapper = {git = "https://github.com/MoinSebi/gfaR_wrapper"}
+
+bifurcation = {git = "https://github.com/MoinSebi/bifurcation"}
