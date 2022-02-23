@@ -14,3 +14,11 @@ clap = "=3.0.0-beta.4"
 gfaR_wrapper = {git = "https://github.com/MoinSebi/gfaR_wrapper"}
 
 bifurcation = {git = "https://github.com/MoinSebi/bifurcation"}
+
+log = "0.4.0"
+env_logger = "0.8.4"
+
+
+[dev-dependencies]
+assert_cmd = "2.0"
+predicates = "2.1"

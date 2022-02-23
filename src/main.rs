@@ -14,6 +14,7 @@ use std::path::Path;
 use std::process;
 use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
+use log::info;
 use crate::bifurcation::algo::{create_bubbles2, test1};
 use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals, writing_uniques_bed_stats};
 
@@ -58,13 +59,22 @@ fn main() {
             .long("unique")
             .about("return a bed file with only unique sequences for each bubble")
             .takes_value(true))
+        .arg(Arg::new("verbose")
+            .short('v')
+            .long("verbose")
+            .about("Verbose help"))
 
 
 
         .get_matches();
 
 
-
+    if matches.is_present("verbose"){
+        env_logger::Builder::new().filter_level(log::LevelFilter::Info).init();
+    } else {
+        env_logger::Builder::new().init();
+    }
+    info!("Running gSV");
 
     let g1;
     if matches.is_present("gfa") {
