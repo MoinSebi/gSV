@@ -37,6 +37,9 @@ fn main() {
             .about("Output prefix")
             .takes_value(true)
             .default_value("panSV.output"))
+        .arg(Arg::new("bifurcation")
+            .short('b')
+            .long("bifurcation"))
         .arg(Arg::new("traversal")
             .short('t')
             .long("traversal")
@@ -109,14 +112,24 @@ fn main() {
 
     // test
 
-    let (o,_m) = algo_panSV(&graph.paths, &counts);
+    let mut gg: BubbleWrapper;
+    let mut o: HashMap<String, Vec<PanSVpos>>;
     let h = graph2pos(&graph);
-    let mut gg = create_bubbles(&o, &graph.paths, &h);
+
+    if matches.is_present("bifurcation"){
+        o = test1(&graph);
+
+        gg = create_bubbles2(& o, & graph.paths, &h);
+    } else {
+        o = algo_panSV(&graph.paths, &counts).0;
+        gg = create_bubbles(&o, &graph.paths, &h);
+        eprintln!("\nIndel detection");
+        let interval_numb = gg.id2interval.len() as u32;
+        indel_detection(& mut gg, &graph.paths, interval_numb);
+    }
 
 
-    eprintln!("\nIndel detection");
-    let interval_numb = gg.id2interval.len() as u32;
-    indel_detection(& mut gg, &graph.paths, interval_numb);
+
 
     eprintln!("\nCategorize bubbles");
     check_bubble_size(&mut gg);
