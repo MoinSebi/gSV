@@ -48,6 +48,7 @@ use std::io;
 use std::io::Write;
 use std::iter::FromIterator;
 use bifurcation::from_gfaR::iterate_test;
+use log::info;
 use crate::core::core::{Bubble, Posindex, Traversal};
 use crate::graph2pos;
 use crate::panSV::algo::connect_bubbles_wrapper;
@@ -56,13 +57,11 @@ use crate::panSV::panSV_core::{BubbleWrapper, PanSVpos};
 ///
 /// test
 pub fn test1(graph: &NGfa) -> HashMap<String, Vec<PanSVpos>> {
-    eprintln!("HIT");
+    info!("Running bifurcation analysis");
 
     let result = iterate_test(graph, 10) ;
-    eprintln!("HIT");
 
     let mut rr = HashMap::new();
-    eprintln!("HIT");
 
     for x in result.iter(){
         let mut v1 = Vec::new();
@@ -78,7 +77,6 @@ pub fn test1(graph: &NGfa) -> HashMap<String, Vec<PanSVpos>> {
         rr.entry(&x.0.1).or_insert(v2.clone()).extend(v2.clone());
 
     }
-    eprintln!("HIT {}", rr.len());
     let mut h = HashMap::new();
     for (key, val) in rr.iter(){
         let mut j = HashSet::new();

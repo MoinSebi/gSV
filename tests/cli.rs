@@ -7,7 +7,7 @@ use env_logger::Target; // Run programs
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("gSV")?;
     cmd.arg("-g example_data/testGrapdsadh.gfa").arg("-o hello");
-    cmd.assert().stderr(predicate::str::contains("input gfa file\n"));
+    cmd.assert().stderr(predicate::str::contains("No file with such name"));
 
     Ok(())
 }

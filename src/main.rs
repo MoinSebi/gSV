@@ -12,10 +12,10 @@ use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
 use std::process;
-use env_logger::Builder;
+use env_logger::{Builder, Target};
 use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
-use log::{info, LevelFilter};
+use log::{info, LevelFilter, warn};
 use crate::bifurcation::algo::{create_bubbles2, test1};
 use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals, writing_uniques_bed_stats};
 use std::io::Write;
@@ -60,7 +60,9 @@ fn main() {
             .short('u')
             .long("unique")
             .about("return a bed file with only unique sequences for each bubble")
+            .default_value("50")
             .takes_value(true))
+
         .arg(Arg::new("verbose")
             .short('v')
             .long("verbose")
@@ -71,6 +73,8 @@ fn main() {
         .get_matches();
 
 
+
+    // Checking verbose
     if matches.is_present("verbose"){
         Builder::new()
             .format(|buf, record| {
@@ -82,6 +86,7 @@ fn main() {
                 )
             })
             .filter(None, LevelFilter::Trace)
+            .target(Target::Stderr)
             .init();
     } else {
         Builder::new()
@@ -94,31 +99,30 @@ fn main() {
                 )
             })
             .filter(None, LevelFilter::Info)
+            .target(Target::Stderr)
             .init();
     }
     info!("Running gSV");
 
-    let g1;
+
+    let mut g1 = "not_relevant";
     if matches.is_present("gfa") {
         if Path::new(matches.value_of("gfa").unwrap()).exists() {
             g1 = matches.value_of("gfa").unwrap();
         } else {
-            eprintln!("No input gfa file");
+            warn!("No file with such name");
             process::exit(0x0100);
         }
 
-    } else {
-        eprintln!("No input gfa file");
-        process::exit(0x0100);
     }
 
 
 
-    let outpre;
+    let outprefix;
     if matches.is_present("output"){
-        outpre = matches.value_of("output").unwrap();
+        outprefix = matches.value_of("output").unwrap();
     } else {
-        outpre = "panSV.out"
+        outprefix = "panSV.out"
     }
 
 
@@ -127,35 +131,37 @@ fn main() {
     graph.from_graph(g1);
 
     // Counting nodes
-    println!("Counting nodes");
 
-    let mut counts: CountNode = CountNode::new();
-    if matches.is_present("delimiter"){
-        let mut h: GraphWrapper = GraphWrapper::new();
-        h.fromNGfa(&graph, matches.value_of("delimiter").unwrap());
-        eprintln!("{} Genomes and {} Paths", h.genomes.len(), graph.paths.len());
-        eprintln!("Counting nodes");
-        counts.counting_wrapper(&graph, &h);
-    } else {
-        eprintln!("{} Genomes and {} Paths", graph.paths.len(), graph.paths.len());
-        eprintln!("Counting nodes");
-        counts.counting_graph(&graph);
-    }
 
     // test
 
     let mut gg: BubbleWrapper;
     let mut o: HashMap<String, Vec<PanSVpos>>;
     let h = graph2pos(&graph);
+    let mut counts: CountNode = CountNode::new();
+
 
     if matches.is_present("bifurcation"){
         o = test1(&graph);
 
-        gg = create_bubbles2(& o, & graph.paths, &h);
+        gg = create_bubbles(& o, & graph.paths, &h);
     } else {
+        let mut counts: CountNode = CountNode::new();
+        info!("Counting nodes");
+        if matches.is_present("delimiter"){
+            let mut h: GraphWrapper = GraphWrapper::new();
+            h.fromNGfa(&graph, matches.value_of("delimiter").unwrap());
+            info!("{} Genomes and {} Paths", h.genomes.len(), graph.paths.len());
+            info!("Counting nodes");
+            counts.counting_wrapper(&graph, &h);
+        } else {
+            info!("{} Genomes and {} Paths", graph.paths.len(), graph.paths.len());
+            info!("Counting nodes");
+            counts.counting_graph(&graph);
+        }
         o = algo_panSV(&graph.paths, &counts).0;
         gg = create_bubbles(&o, &graph.paths, &h);
-        eprintln!("\nIndel detection");
+        info!("Indel detection");
         let interval_numb = gg.id2interval.len() as u32;
         indel_detection(& mut gg, &graph.paths, interval_numb);
     }
@@ -163,37 +169,37 @@ fn main() {
 
 
 
-    eprintln!("\nCategorize bubbles");
+    info!("Categorize bubbles");
     check_bubble_size(&mut gg);
     nest(& mut gg);
 
     let mut jj = OldNaming::new();
 
 
-    eprintln!("Writing stats");
+    info!("Writing stats");
     if matches.is_present("old naming"){
-        bubble_naming_old(&gg.id2bubble, & mut jj.hm, outpre, &(graph.paths.len() as u32));
+        bubble_naming_old(&gg.id2bubble, & mut jj.hm, outprefix, &(graph.paths.len() as u32));
     } else {
-        bubble_naming_new(&gg.id2bubble, outpre);
-        bubble_parent_structure(&gg.id2bubble, outpre);
+        bubble_naming_new(&gg.id2bubble, outprefix);
+        bubble_parent_structure(&gg.id2bubble, outprefix);
     }
 
 
 
-    eprintln!("Writing bed");
-    writing_bed(& gg, &h, outpre);
-    writing_bed_traversals(&gg, &h, outpre);
+    info!("Writing bed");
+    writing_bed(& gg, &h, outprefix);
+    writing_bed_traversals(&gg, &h, outprefix);
 
 
     if matches.is_present("traversal"){
-        eprintln!("Writing traversal");
-        writing_traversals(&gg, outpre);
+        info!("Writing traversal");
+        writing_traversals(&gg, outprefix);
     }
 
     if matches.is_present("unique"){
-        eprintln!("Writing traversal");
+        info!("Writing traversal");
         let size: usize = matches.value_of("unique").unwrap().parse().unwrap();
-        writing_uniques_bed(&gg, &h, outpre , size);
+        writing_uniques_bed(&gg, &h, outprefix, size);
     }
 
 

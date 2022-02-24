@@ -6,6 +6,7 @@ use related_intervals::{make_nested, Network};
 use gfaR_wrapper::NPath;
 use std::io::{self, Write};
 use std::cmp::min;
+use log::info;
 
 
 #[allow(non_snake_case)]
@@ -16,7 +17,7 @@ use std::cmp::min;
 /// panSVpos: index, index, core
 ///
 pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, Vec<PanSVpos>>, HashMap<String, usize>) {
-    print!("PanSV running\n");
+    info!("PanSV running");
 
     let mut lastcore: u32;
     #[allow(non_snake_case)]
@@ -40,8 +41,8 @@ pub fn algo_panSV(paths: & Vec<NPath>, counts: &CountNode) -> (HashMap<String, V
         // All "open" intervals
         let mut interval_open:  Vec<TmpPos> = Vec::new();
 
-        print!("({}/{}) {}\r", i+1, paths.len(), x.name);
-        io::stdout().flush().unwrap();
+        info!("({}/{}) {}\r", i+1, paths.len(), x.name);
+        io::stderr().flush().unwrap();
         // Iterate over all nodes
         for (index, node) in x.nodes.iter().enumerate() {
 
@@ -134,7 +135,7 @@ pub fn sort_trav(result:  HashMap<String, Vec<PanSVpos>>) -> HashMap<String, Vec
 ///
 pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   Vec<NPath>, ghm: &'b HashMap<String, Vec<usize>>) -> BubbleWrapper<'a>{
 
-    println!("\nCreate bubbles");
+    info!("Create bubbles");
     let mut result: BubbleWrapper = BubbleWrapper::new();
 
     let mut tcount = 0;
@@ -143,7 +144,7 @@ pub fn create_bubbles<'a, 'b>(inp: &'a HashMap<String, Vec<PanSVpos>>, p: &'a   
 
     for (i,x) in p.iter().enumerate(){
 
-        print!("({}/{}) {}\r", i+1, p.len(), x.name);
+        info!("({}/{}) {}\r", i+1, p.len(), x.name);
         io::stdout().flush().unwrap();
 
 
@@ -289,11 +290,11 @@ pub fn indel_detection<'a>(r: & mut BubbleWrapper<'a>, paths: &'a Vec<NPath>, la
 ///
 /// Running function for each path alone
 pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  mut BubbleWrapper){
-    println!("\nConnecting bubbles");
+    info!("Connecting bubbles");
     let mut network: HashMap<(u32, u32), Network>;
     for (i ,(k,v)) in hm.iter().enumerate(){
 
-        print!("({}/{}) {}\r", i+1, hm.len(), k);
+        info!("({}/{}) {}\r", i+1, hm.len(), k);
         io::stdout().flush().unwrap();
 
         let mut jo: Vec<(u32, u32)> = Vec::new();
@@ -413,8 +414,8 @@ pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
 pub fn check_nest(h: & mut BubbleWrapper){
     for x in h.id2bubble.iter(){
         if x.1.nestedness == 0{
-            eprintln!("{:?}", x);
-            eprintln!("THIS IS THE END");
+            info!("{:?}", x);
+            info!("THIS IS THE END");
         }
     }
 }
