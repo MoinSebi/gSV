@@ -110,7 +110,7 @@ fn main() {
 
 
     info!("Running gSV");
-    let threads = matches.value_of("threads").unwrap();
+    let threads= matches.value_of("threads").unwrap().parse().unwrap();
 
 
     let mut g1 = "not_relevant";
@@ -145,7 +145,7 @@ fn main() {
 
 
     if matches.is_present("bifurcation"){
-        o = bifurcation_wrapper(&graph);
+        o = bifurcation_wrapper(&graph, &threads);
 
         gg = create_bubbles(& o, & graph.paths, &h);
     } else {
@@ -203,6 +203,7 @@ fn main() {
         info!("Writing traversal");
         let size: usize = matches.value_of("unique").unwrap().parse().unwrap();
         writing_uniques_bed(&gg, &h, outprefix, size);
+        writing_uniques_bed_stats(&gg, &h, outprefix, size);
     }
 
 
