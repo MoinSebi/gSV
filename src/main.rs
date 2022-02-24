@@ -16,7 +16,7 @@ use env_logger::{Builder, Target};
 use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
 use log::{info, LevelFilter, warn};
-use crate::bifurcation::algo::{create_bubbles2, test1};
+use crate::bifurcation::algo::{create_bubbles2, bifurcation_wrapper};
 use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals, writing_uniques_bed_stats};
 use std::io::Write;
 use chrono::Local;
@@ -145,7 +145,7 @@ fn main() {
 
 
     if matches.is_present("bifurcation"){
-        o = test1(&graph);
+        o = bifurcation_wrapper(&graph);
 
         gg = create_bubbles(& o, & graph.paths, &h);
     } else {

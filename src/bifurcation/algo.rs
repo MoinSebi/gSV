@@ -54,15 +54,17 @@ use crate::graph2pos;
 use crate::panSV::algo::connect_bubbles_wrapper;
 use crate::panSV::panSV_core::{BubbleWrapper, PanSVpos};
 
-///
-/// test
-pub fn test1(graph: &NGfa) -> HashMap<String, Vec<PanSVpos>> {
+/// Bifurcation wrapper
+/// TODO
+/// Remove some iterations and memory problems
+pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec<PanSVpos>> {
     info!("Running bifurcation analysis");
 
-    let result = iterate_test(graph, 10) ;
+    let result = iterate_test(graph, threads.clone()) ;
 
-    let mut rr = HashMap::new();
+    let mut result_temp = HashMap::new();
 
+    info!("Sorting and merging results");
     for x in result.iter(){
         let mut v1 = Vec::new();
         let mut v2 = Vec::new();
@@ -73,28 +75,28 @@ pub fn test1(graph: &NGfa) -> HashMap<String, Vec<PanSVpos>> {
             }
 
         }
-        rr.entry(&x.0.0).or_insert(v1.clone()).extend(v1.clone());
-        rr.entry(&x.0.1).or_insert(v2.clone()).extend(v2.clone());
+        result_temp.entry(&x.0.0).or_insert(v1.clone()).extend(v1.clone());
+        result_temp.entry(&x.0.1).or_insert(v2.clone()).extend(v2.clone());
 
     }
-    let mut h = HashMap::new();
-    for (key, val) in rr.iter(){
+    let mut result_merge = HashMap::new();
+    for (key, val) in result_temp.iter(){
         let mut j = HashSet::new();
         for x in val.iter(){
             j.insert((x.0 as u32,x.1 as u32, 0));
         }
-        h.insert(key.to_owned().clone(), j);
+        result_merge.insert(key.to_owned().clone(), j);
     }
 
-    let mut h2 = HashMap::new();
-    for (key, val) in h.iter(){
+    let mut result_panpos = HashMap::new();
+    for (key, val) in result_merge.iter(){
         let mut j = Vec::new();
         for x in val.iter(){
             j.push(PanSVpos{start: x.0, end: x.1, core: x.2})
         }
-        h2.insert(key.to_owned().clone(), j);
+        result_panpos.insert(key.to_owned().clone(), j);
     }
-    h2
+    result_panpos
 
 
 
@@ -226,7 +228,7 @@ mod tests {
     use crate::core::helper::{bool2string_dir, vec2string, hashset2string};
     use std::collections::HashSet;
     use gfaR_wrapper::NGfa;
-    use crate::bifurcation::algo::{create_bubbles2, test1};
+    use crate::bifurcation::algo::{create_bubbles2, bifurcation_wrapper};
     use crate::{algo_panSV, CountNode, create_bubbles, graph2pos, indel_detection};
     use crate::panSV::algo::sort_trav;
 
@@ -234,7 +236,7 @@ mod tests {
     fn pairs() {
         let mut graph = NGfa::new();
         graph.from_graph("example_data/testGraph.gfa");
-        let mut h = test1(&graph);
+        let mut h = bifurcation_wrapper(&graph);
         let g2p = graph2pos(&graph);
         eprintln!("hello123124213a");
         let j = sort_trav(h);
