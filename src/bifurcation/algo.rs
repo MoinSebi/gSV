@@ -48,9 +48,9 @@ use std::io;
 use std::io::Write;
 use std::iter::FromIterator;
 use bifurcation::from_gfaR::iterate_test;
-use log::info;
+use log::{debug, info};
 use crate::core::core::{Bubble, Posindex, Traversal};
-use crate::graph2pos;
+use crate::{graph2pos, sort_trav};
 use crate::panSV::algo::connect_bubbles_wrapper;
 use crate::panSV::panSV_core::{BubbleWrapper, PanSVpos};
 
@@ -85,6 +85,7 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         for x in val.iter(){
             j.insert((x.0 as u32,x.1 as u32, 0));
         }
+        debug!("panPos size {}", j.len());
         result_merge.insert(key.to_owned().clone(), j);
     }
 
@@ -96,7 +97,8 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         }
         result_panpos.insert(key.to_owned().clone(), j);
     }
-    result_panpos
+    let result_panpos_final = sort_trav(result_panpos);
+    result_panpos_final
 
 
 
@@ -236,7 +238,7 @@ mod tests {
     fn pairs() {
         let mut graph = NGfa::new();
         graph.from_graph("example_data/testGraph.gfa");
-        let mut h = bifurcation_wrapper(&graph);
+        let mut h = bifurcation_wrapper(&graph, &2);
         let g2p = graph2pos(&graph);
         eprintln!("hello123124213a");
         let j = sort_trav(h);
