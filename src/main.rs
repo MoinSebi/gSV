@@ -42,9 +42,9 @@ fn main() {
             .default_value("panSV.output"))
         .arg(Arg::new("bifurcation")
             .short('b')
-            .long("bifurcation"))
+            .long("bifurcation")
+            .about("Bifurcation mode "))
         .arg(Arg::new("traversal")
-            .short('t')
             .long("traversal")
             .about("Additional traversal file as output"))
         .arg(Arg::new("old naming")
@@ -59,14 +59,19 @@ fn main() {
         .arg(Arg::new("unique")
             .short('u')
             .long("unique")
-            .about("return a bed file with only unique sequences for each bubble")
+            .about("Return additional files with unique traversals above THIS value")
             .default_value("50")
             .takes_value(true))
 
         .arg(Arg::new("verbose")
             .short('v')
             .long("verbose")
-            .about("Verbose help"))
+            .about("Verbose "))
+        .arg(Arg::new("threads")
+            .short('t')
+            .long("threads")
+            .about("Number of threads")
+            .default_value("1"))
 
 
 
@@ -102,7 +107,10 @@ fn main() {
             .target(Target::Stderr)
             .init();
     }
+
+
     info!("Running gSV");
+    let threads = matches.value_of("threads").unwrap();
 
 
     let mut g1 = "not_relevant";
@@ -118,12 +126,7 @@ fn main() {
 
 
 
-    let outprefix;
-    if matches.is_present("output"){
-        outprefix = matches.value_of("output").unwrap();
-    } else {
-        outprefix = "panSV.out"
-    }
+    let outprefix= matches.value_of("output").unwrap();
 
 
 
