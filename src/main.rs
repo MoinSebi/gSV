@@ -12,12 +12,14 @@ use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
 use std::process;
+use env_logger::Builder;
 use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
-use log::info;
+use log::{info, LevelFilter};
 use crate::bifurcation::algo::{create_bubbles2, test1};
 use crate::core::writer::{writing_traversals, writing_bed, bubble_naming_new, bubble_naming_old, bubble_parent_structure, writing_uniques_bed, writing_bed_traversals, writing_uniques_bed_stats};
-
+use std::io::Write;
+use chrono::Local;
 
 fn main() {
     let matches = App::new("panSV")
@@ -70,9 +72,29 @@ fn main() {
 
 
     if matches.is_present("verbose"){
-        env_logger::Builder::new().filter_level(log::LevelFilter::Info).init();
+        Builder::new()
+            .format(|buf, record| {
+                writeln!(buf,
+                         "{} [{}] - {}",
+                         Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                         record.level(),
+                         record.args()
+                )
+            })
+            .filter(None, LevelFilter::Trace)
+            .init();
     } else {
-        env_logger::Builder::new().init();
+        Builder::new()
+            .format(|buf, record| {
+                writeln!(buf,
+                         "{} [{}] - {}",
+                         Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                         record.level(),
+                         record.args()
+                )
+            })
+            .filter(None, LevelFilter::Info)
+            .init();
     }
     info!("Running gSV");
 
@@ -217,6 +239,7 @@ mod tests {
     #[test]
     fn writing() {
         let mut graph: NGfa = NGfa::new();
+
         graph.from_graph("example_data/testGraph.gfa");
         let mut counts: CountNode = CountNode::new();
         counts.counting_graph(&graph);
