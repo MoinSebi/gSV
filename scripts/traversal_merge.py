@@ -38,7 +38,7 @@ def readTrans(ftrans):
         ftrans: file trans uniq input (s. gSV output)
 
     Returns:
-        t: dict(bubbleid -> [[traversalid, nodes]]
+        t: dict(bubbleid -> [[traversalid, "path"[node+,node2-]]
     """
 
     logging.info("Read trans file")
@@ -97,6 +97,8 @@ def getLen(s, nodes):
     """
     sp = s.split(",")
     spp = [x[:-1] for x in sp]
+    if len(spp) == 0 or sp == [""]:
+        return 0
     ll = 0
     for x in spp:
         ll += len(nodes[x])
@@ -112,6 +114,23 @@ def inter(l1, l2):
     ls2 = set(l2.split(","))
     o = ls1.intersection(ls2)
     return [len(o), len(ls1), len(ls2)]
+
+
+def inter2(l1, l2, nodes):
+    """
+    Intersection of two paths
+    Returns: Length of intersection, path1, path2
+    """
+    ls1 = set(l1.split(","))
+    ls2 = set(l2.split(","))
+    o = ls1.intersection(ls2)
+    ls1priv = getLen(",".join(list(ls1 - o)), nodes)
+    ls1p = getLen(",".join(list(ls1)), nodes)
+
+    ls2priv = getLen(",".join(list(ls2 - o)), nodes)
+    ls2p = getLen(",".join(list(ls2)), nodes)
+    olen = getLen(",".join(list(o)), nodes)
+    return [ls1priv, ls1p, ls2priv, ls2p, olen]
 
 def check1(t, nodes, intersection, diff):
     """
@@ -162,6 +181,70 @@ def check1(t, nodes, intersection, diff):
         count += 1;
     return result
 
+def check2(t, nodes, intersection):
+    """
+
+    Args:
+        t: trans input (s. above)
+        nodes: nodes (gfa)
+        intersection: Fraction of intersection
+        diff: bp difference
+
+   Help:
+
+   Returns:
+        bubble, group, all traversal (first is the representative)
+    """
+    logging.info("Clustering")
+
+    result = dict()
+    count = 0
+    for bubble_id, traverals in t.items():
+        groups = dict()
+        # print([v[1]+[getLen(v[0][1], nodes)]])
+        groups[0] = [traverals[0] + [getLen(traverals[0][1], nodes)]]
+        group_count = 1
+        for x in traverals[1:]:
+            id = -1
+            trig = False;
+            for group_id, trav in groups.items():
+                glen = getLen(x[1], nodes)
+                node_intersection = inter2(x[1], trav[0][1], nodes)
+                if (node_intersection[0]/node_intersection[1] < intersection) and (node_intersection[2]/node_intersection[3] < intersection):
+                    if glen > trav[0][2]:
+                        trig = True
+                    id = group_id
+                    break
+            if id == -1:
+                groups[group_count] = [x + [getLen(x[1], nodes)]]
+                group_count += 1
+            else:
+                if trig:
+                    groups[id].insert(0, x + [getLen(x[1], nodes)])
+                else:
+                    groups[id].append(x + [getLen(x[1], nodes)])
+
+        result[bubble_id] = groups
+        count += 1;
+    return result
+
+def add_stats(data, nodes):
+    logging.info("Add stats")
+
+    # bubble_id, dict -> groups
+
+    for k,v in data.items():
+
+        # group -> intervals (id, nodes, len)
+        for key, val in v.items():
+            j = []
+            for x in val:
+                node_intersection = inter2(x[1], val[0][1], nodes)
+                j.append(node_intersection[0]/node_intersection[1])
+                x.append(node_intersection[0]/node_intersection[1])
+
+
+
 def some_stats(data, stats) -> None:
     c = 0
     for k, v in data.items():
@@ -192,14 +275,34 @@ def writeFile(fout, data):
                 file.write("{}\t{}\t{}\t{}\n".format(k, k2, v2[0][1], ",".join(na)))
 
 
+
+def writeFile2(fout, data):
+    """
+
+    Args:
+        fout: file output name
+        data:
+
+    Returns:
+        - file
+    """
+
+    logging.info("Write files2")
+    with open(fout, "w") as file:
+        for k, v in data.items():
+            for k2, v2 in v.items():
+                na = [str(x[0]) for x in v2]
+                na2 = [str(x[3]) for x in v2]
+                file.write("{}\t{}\t{}\t{}\t{}\n".format(k, k2, v2[0][1], ",".join(na), ",".join(na2)))
+
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-g", "--gfa", help="gfa file", required=True)
     parser.add_argument("-u", "--uniq", help = "*traversal.unique.bubble.bed file ", required=True)
     parser.add_argument("-o", "--out", help = "output file name ", required=True)
-    parser.add_argument("-d", "--difference", help = "Length fraction of member and the 'biggest' representative", default=0.1)
-    parser.add_argument("-i", "--intersection", help = "Fraction of node intersection ", default=0.5)
+    parser.add_argument("-i", "--intersection", help = "Fraction of private/total sequence", default=0.3)
     args = parser.parse_args()
 
 
@@ -207,9 +310,9 @@ if __name__ == "__main__":
     nodes, edges, paths = readGFA(args.gfa)
     stats = readTrans(args.uniq)
 
-    diff = float(args.difference)
     interf = float(args.intersection)
 
-    result = check1(stats, nodes, interf, diff)
+    result = check2(stats, nodes, interf)
+    add_stats(result, nodes)
     some_stats(result, stats)
-    writeFile(args.out, result)
+    writeFile2(args.out, result)
