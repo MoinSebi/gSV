@@ -302,7 +302,6 @@ pub fn connect_bubbles_wrapper(hm: &HashMap<String, Vec<PanSVpos>>, result: &  m
             jo.push((x.start.clone(), x.end.clone()));
         }
         network = related_intervals::create_network_hashmap(&jo);
-
         make_nested(&jo, & mut network);
         connect_bubbles(&network,  result, &k);
 
@@ -414,7 +413,6 @@ pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
 pub fn check_nest(h: & mut BubbleWrapper){
     for x in h.id2bubble.iter(){
         if x.1.nestedness == 0{
-            info!("{:?}", x);
             info!("THIS IS THE END");
         }
     }

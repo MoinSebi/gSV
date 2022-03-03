@@ -1,58 +1,16 @@
-// pub fn find_parents(h: &HashMap<&String, Vec<(u32, u32, u32)>>, hu: &mut HashMap< u32, Bubble>, thekey: &HashMap<u32, u32>){
-//     let mut opens: Vec<usize> = Vec::new();
-//     println!("{:?}", thekey);
-//     // iterating over the the vector acc -> (start stop)
-//     for i in h.iter(){
-//        opens = Vec::new();
-//         for (ii, x) in i.iter().enumerate(){
-//             if opens.len() == 0{
-//                 opens.push(ii)
-//             } else {
-//                 // this is why
-//                 let mut vecc = Vec::new();
-//                 for (indi, oi) in opens.iter().rev().enumerate(){
-//                     if i[*oi].1 < x.0{
-//                         vecc.push(indi);
-//                         if indi == opens.len() -1{
-//                         } else {
-//                             let k = hu[&((thekey[&i[oi-1].2]))].id.clone();
-//                             println!("dasdad {:?}",k);
-//                             hu.get_mut(&(thekey[&i[oi-1].2])).unwrap().addChild(k);
-//
-//                         }
-//                     }
-//                 }
-//                 opens.push(ii);
-//                 println!("Weggle {:?}", vecc);
-//             }
-//         }
-//         println!("{}", opens.len());
-//         println!("{:?}", opens);
-//         if opens.len() != 0{
-//             for end in (1..opens.len()).rev(){
-//                 println!("{:?}", thekey);
-//                 let k = hu[&((thekey[&i[end-1].2]))].id.clone();
-//                 let k2 = hu[&((thekey[&i[end].2]))].id.clone();
-//                 println!("{:?}",k);
-//                 hu.get_mut(&(thekey[&i[end].2])).unwrap().addChild(k);
-//                 hu.get_mut(&(thekey[&i[end-1].2])).unwrap().addPar(k2);
-//                 //hu.get_mut(&(1 as u32)).unwrap().link(hu.get_mut(&(1 as u32)).unwrap());
-//             }
-//
-//         }
-//     }
-// }
 use gfaR_wrapper::{NGfa, NPath};
 use std::collections::{HashSet, HashMap, BTreeSet};
 use std::io;
 use std::io::Write;
 use std::iter::FromIterator;
+use std::os::unix::raw::ino_t;
 use bifurcation::from_gfaR::iterate_test;
 use log::{debug, info};
 use crate::core::core::{Bubble, Posindex, Traversal};
 use crate::{graph2pos, sort_trav};
 use crate::panSV::algo::connect_bubbles_wrapper;
 use crate::panSV::panSV_core::{BubbleWrapper, PanSVpos};
+
 
 /// Bifurcation wrapper
 /// TODO
@@ -85,7 +43,8 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         for x in val.iter(){
             j.insert((x.0 as u32,x.1 as u32, 0));
         }
-        debug!("panPos size {}", j.len());
+        //debug!("panPos size {}", j.len());
+        //debug!("panPos size {:?}", j);
         result_merge.insert(key.to_owned().clone(), j);
     }
 
@@ -95,8 +54,16 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         for x in val.iter(){
             j.push(PanSVpos{start: x.0, end: x.1, core: x.2})
         }
+        for x in j.iter(){
+            if x.end < x.start{
+                print!("help");
+                print!("{:?}", x);
+            }
+        }
         result_panpos.insert(key.to_owned().clone(), j);
     }
+    //print!("{:?}", result_panpos);
+
     let result_panpos_final = sort_trav(result_panpos);
     result_panpos_final
 
