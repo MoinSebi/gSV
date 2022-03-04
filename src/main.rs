@@ -12,7 +12,7 @@ use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
 use std::process;
-use env_logger::{Builder, Target};
+use env_logger::{Builder,Target};
 use crate::panSV::panSV_core::{BubbleWrapper, OldNaming, PanSVpos};
 use gfaR_wrapper::{NGfa, GraphWrapper};
 use log::{info, LevelFilter, warn};
@@ -62,11 +62,14 @@ fn main() {
             .about("Return additional files with unique traversals above THIS value")
             .default_value("50")
             .takes_value(true))
-
         .arg(Arg::new("verbose")
             .short('v')
-            .long("verbose")
-            .about("Verbose "))
+            .about("-v = DEBUG | -vv = TRACE")
+            .takes_value(true)
+            .default_missing_value("v1"))
+        .arg(Arg::new("quiet")
+            .short('q')
+            .about("No updating INFO messages"))
         .arg(Arg::new("threads")
             .short('t')
             .long("threads")
@@ -77,10 +80,9 @@ fn main() {
 
         .get_matches();
 
-
-
     // Checking verbose
-    if matches.is_present("verbose"){
+    // Ugly, but needed - May end up in a small library later
+    if matches.is_present("quiet"){
         Builder::new()
             .format(|buf, record| {
                 writeln!(buf,
@@ -90,9 +92,41 @@ fn main() {
                          record.args()
                 )
             })
-            .filter(None, LevelFilter::Trace)
+            .filter(None, LevelFilter::Warn)
             .target(Target::Stderr)
             .init();
+
+    }
+
+    else if matches.is_present("verbose"){
+        if matches.value_of("verbose").unwrap() == "v1"{
+            Builder::new()
+                .format(|buf, record| {
+                    writeln!(buf,
+                             "{} [{}] - {}",
+                             Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                             record.level(),
+                             record.args()
+                    )
+                })
+                .filter(None, LevelFilter::Debug)
+                .target(Target::Stderr)
+                .init();
+        }
+        else if matches.value_of("verbose").unwrap() == "v"{
+            Builder::new()
+                .format(|buf, record| {
+                    writeln!(buf,
+                             "{} [{}] - {}",
+                             Local::now().format("%Y-%m-%dT%H:%M:%S"),
+                             record.level(),
+                             record.args()
+                    )
+                })
+                .filter(None, LevelFilter::Trace)
+                .target(Target::Stderr)
+                .init();
+        }
     } else {
         Builder::new()
             .format(|buf, record| {
@@ -174,6 +208,7 @@ fn main() {
 
     info!("Categorize bubbles");
     check_bubble_size(&mut gg);
+    info!("Nestness ");
     nest(& mut gg);
 
     let mut jj = OldNaming::new();
@@ -209,6 +244,8 @@ fn main() {
 
 
 }
+
+
 
 #[cfg(test)]
 mod tests {
