@@ -95,12 +95,12 @@ def getLen(s, nodes):
     Returns:
         ll: Sum of all nodes in path
     """
-    sp = s.split(",")
-    spp = [x[:-1] for x in sp]
-    if len(spp) == 0 or sp == [""]:
+
+    if len(s) == 0 or s == [""]:
         return 0
     ll = 0
-    for x in spp:
+    print(s)
+    for x in s:
         ll += len(nodes[x])
     return ll
 
@@ -121,65 +121,21 @@ def inter2(l1, l2, nodes):
     Intersection of two paths
     Returns: Length of intersection, path1, path2
     """
-    ls1 = set(l1.split(","))
-    ls2 = set(l2.split(","))
-    o = ls1.intersection(ls2)
-    ls1priv = getLen(",".join(list(ls1 - o)), nodes)
-    ls1p = getLen(",".join(list(ls1)), nodes)
+    #ls1 = set(l1.split(","))
+    ls1= set([x[:-1] for x in l1.split(",")])
 
-    ls2priv = getLen(",".join(list(ls2 - o)), nodes)
-    ls2p = getLen(",".join(list(ls2)), nodes)
-    olen = getLen(",".join(list(o)), nodes)
+    #ls2 = set(l2.split(","))
+    ls2 = set([x[:-1] for x in l2.split(",")])
+
+    o = ls1.intersection(ls2)
+    ls1priv = getLen(list(ls1 - o), nodes)
+    ls1p = getLen(list(ls1), nodes)
+
+    ls2priv = getLen(list(ls2 - o), nodes)
+    ls2p = getLen(list(ls2), nodes)
+    olen = getLen(list(o), nodes)
     return [ls1priv, ls1p, ls2priv, ls2p, olen]
 
-def check1(t, nodes, intersection, diff):
-    """
-
-    Args:
-        t: trans input (s. above)
-        nodes: nodes (gfa)
-        intersection: Fraction of intersection
-        diff: bp difference
-
-   Help:
-
-   Returns:
-        bubble, group, all traversal (first is the representative)
-    """
-    logging.info("Clustering")
-
-    result = dict()
-    count = 0
-    for bubble_id, traverals in t.items():
-        groups = dict()
-        # print([v[1]+[getLen(v[0][1], nodes)]])
-        groups[0] = [traverals[0] + [getLen(traverals[0][1], nodes)]]
-        group_count = 1
-        for x in traverals[1:]:
-            ll = getLen(x[1], nodes)
-            id = -1
-            trig = False;
-            for group_id, traverals in groups.items():
-                if traverals[0][2] + traverals[0][2] * (1+diff) > ll > traverals[0][2] - traverals[0][2] * (1+diff):
-                    node_intersection = inter(x[1], traverals[0][1])
-                    if node_intersection[0] != 0:
-                        if node_intersection[1] / node_intersection[0] > 1-intersection and node_intersection[2] / node_intersection[0] > 1-intersection and node_intersection[1] / node_intersection[0] < 1+intersection and node_intersection[2] / node_intersection[0] < 1+intersection:
-                            if ll > traverals[0][2]:
-                                trig = True
-                            id = group_id
-                            break
-            if id == -1:
-                groups[group_count] = [x + [getLen(x[1], nodes)]]
-                group_count += 1
-            else:
-                if trig:
-                    groups[id].insert(0, x + [getLen(x[1], nodes)])
-                else:
-                    groups[id].append(x + [getLen(x[1], nodes)])
-
-        result[bubble_id] = groups
-        count += 1;
-    return result
 
 def check2(t, nodes, intersection):
     """
@@ -202,13 +158,15 @@ def check2(t, nodes, intersection):
     for bubble_id, traverals in t.items():
         groups = dict()
         # print([v[1]+[getLen(v[0][1], nodes)]])
-        groups[0] = [traverals[0] + [getLen(traverals[0][1], nodes)]]
+        print([x1[:-1] for x1 in traverals[0][1].split(",")])
+        print(traverals[0][1])
+        groups[0] = [traverals[0] + [getLen([x1[:-1] for x1 in traverals[0][1].split(",")], nodes)]]
         group_count = 1
         for x in traverals[1:]:
             id = -1
             trig = False;
             for group_id, trav in groups.items():
-                glen = getLen(x[1], nodes)
+                glen = getLen([x1[:-1] for x1 in x[1].split(",")], nodes)
                 node_intersection = inter2(x[1], trav[0][1], nodes)
                 if (node_intersection[0]/node_intersection[1] < intersection) and (node_intersection[2]/node_intersection[3] < intersection):
                     if glen > trav[0][2]:
@@ -216,13 +174,13 @@ def check2(t, nodes, intersection):
                     id = group_id
                     break
             if id == -1:
-                groups[group_count] = [x + [getLen(x[1], nodes)]]
+                groups[group_count] = [x + [getLen([x1[:-1] for x1 in x[1].split(",")], nodes)]]
                 group_count += 1
             else:
                 if trig:
-                    groups[id].insert(0, x + [getLen(x[1], nodes)])
+                    groups[id].insert(0, x + [getLen([x1[:-1] for x1 in x[1].split(",")], nodes)])
                 else:
-                    groups[id].append(x + [getLen(x[1], nodes)])
+                    groups[id].append(x + [getLen([x1[:-1] for x1 in x[1].split(",")], nodes)])
 
         result[bubble_id] = groups
         count += 1;
