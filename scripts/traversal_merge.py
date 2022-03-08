@@ -99,7 +99,6 @@ def getLen(s, nodes):
     if len(s) == 0 or s == [""]:
         return 0
     ll = 0
-    print(s)
     for x in s:
         ll += len(nodes[x])
     return ll
@@ -158,8 +157,6 @@ def check2(t, nodes, intersection):
     for bubble_id, traverals in t.items():
         groups = dict()
         # print([v[1]+[getLen(v[0][1], nodes)]])
-        print([x1[:-1] for x1 in traverals[0][1].split(",")])
-        print(traverals[0][1])
         groups[0] = [traverals[0] + [getLen([x1[:-1] for x1 in traverals[0][1].split(",")], nodes)]]
         group_count = 1
         for x in traverals[1:]:
