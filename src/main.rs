@@ -62,6 +62,9 @@ fn main() {
             .about("Return additional files with unique traversals above THIS value")
             .default_value("50")
             .takes_value(true))
+        .arg(Arg::new("Nestedness")
+            .long("nestedness")
+            .about("Add nestedness to the stats output"))
         .arg(Arg::new("verbose")
             .short('v')
             .about("-v = DEBUG | -vv = TRACE")
@@ -208,8 +211,11 @@ fn main() {
 
     info!("Categorize bubbles");
     check_bubble_size(&mut gg);
-    info!("Nestness ");
-    nest(& mut gg);
+
+    if matches.is_present("Nestedness"){
+        info!("Nestedness");
+        nest(& mut gg);
+    }
 
     let mut jj = OldNaming::new();
 
