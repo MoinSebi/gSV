@@ -376,8 +376,6 @@ pub fn check_bubble_size(h: & mut BubbleWrapper){
 
 /// Wrapper for nestedness function
 pub fn nest(h: & mut BubbleWrapper){
-
-    let mut nest = 0;
     for x in 0..h.id2bubble.len(){
         let k = h.id2bubble.get_mut(&(x as u32)).unwrap();
         if k.parents.len() == 0{
@@ -408,7 +406,7 @@ pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
     }
 }
 
-
+#[allow(dead_code)]
 /// Checking if all good
 pub fn check_nest(h: & mut BubbleWrapper){
     for x in h.id2bubble.iter(){

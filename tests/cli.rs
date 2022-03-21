@@ -1,7 +1,6 @@
 use assert_cmd::prelude::*; // Add methods on commands
 use predicates::prelude::*; // Used for writing assertions
 use std::process::Command;
-use env_logger::Target; // Run programs
 
 #[test]
 fn file_doesnt_exist() -> Result<(), Box<dyn std::error::Error>> {

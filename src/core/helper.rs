@@ -29,8 +29,8 @@ pub fn hashset2string(input: &HashSet<u32>, sep:  &str) -> String{
 }
 
 #[cfg(test)]
-mod tests {
-    use crate::core::helper::{bool2string_dir, vec2string, hashset2string};
+mod helpertest {
+    use crate::core::helper::{bool2string_dir, vec2string};
     use std::collections::HashSet;
 
     #[test]
