@@ -7,7 +7,7 @@ mod bifurcation;
 
 use std::collections::HashMap;
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest, sort_trav};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest_wrapper, sort_trav};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
@@ -213,7 +213,7 @@ fn main() {
 
     if matches.is_present("Nestedness"){
         info!("Nestedness");
-        nest(& mut gg);
+        nest_wrapper(& mut gg);
     }
 
     let mut jj = OldNaming::new();
@@ -256,7 +256,7 @@ fn main() {
 mod tests {
     use super::*;
     use crate::core::writer::writing_bed_traversals;
-    use crate::panSV::algo::{check_bubble_size, nest, check_nest};
+    use crate::panSV::algo::{check_bubble_size, nest_wrapper, check_nest};
 
     #[test]
     fn counting() {
@@ -282,7 +282,7 @@ mod tests {
         indel_detection(& mut gg, &graph.paths, interval_numb);
         println!("djaskdjakjdkasjsdsa");
         check_bubble_size(&mut gg);
-        nest(& mut gg);
+        nest_wrapper(& mut gg);
         check_nest(& mut gg);
         bubble_naming_new(&gg.id2bubble, "example_data/panSV_test2");
 

@@ -375,14 +375,14 @@ pub fn check_bubble_size(h: & mut BubbleWrapper){
 }
 
 /// Wrapper for nestedness function
-pub fn nest(h: & mut BubbleWrapper){
+pub fn nest_wrapper(h: & mut BubbleWrapper){
     for x in 0..h.id2bubble.len(){
         let k = h.id2bubble.get_mut(&(x as u32)).unwrap();
         if k.parents.len() == 0{
             k.nestedness = 1;
             let kk = k.children.clone();
             for ok in kk.iter(){
-                nest2(h, &ok, 2);
+                nest_function(h, &ok, 2);
             }
 
         }
@@ -391,7 +391,7 @@ pub fn nest(h: & mut BubbleWrapper){
 
 
 /// Get nestedness functions
-pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
+pub fn nest_function(h: & mut BubbleWrapper, id: &u32, core: u16){
     let k = h.id2bubble.get_mut(id).unwrap();
     if k.nestedness != 0{
         k.nestedness = min(k.nestedness, core)
@@ -401,17 +401,33 @@ pub fn nest2(h: & mut BubbleWrapper, id: &u32, core: u16){
     if k.children.len() > 0{
         let kk = k.children.clone();
         for x in kk.iter(){
-            nest2(h, &x, core +1)
+            nest_function(h, &x, core +1)
         }
     }
 }
 
-#[allow(dead_code)]
-/// Checking if all good
-pub fn check_nest(h: & mut BubbleWrapper){
-    for x in h.id2bubble.iter(){
-        if x.1.nestedness == 0{
-            info!("THIS IS THE END");
-        }
+
+/// Get the real nestedness
+pub fn nest_version2(h: & mut BubbleWrapper){
+    for x in 0..h.id2bubble.len(){
+        let level = go1(x as u32, h) as u16;
+        let g = h.id2bubble.get_mut(&(x as u32)).unwrap();
+        g.nestedness = level;
     }
+}
+
+
+/// Function for nest_version2
+pub fn go1(id: u32, h: & mut BubbleWrapper) -> usize{
+    let mut bubble = h.id2bubble.get(&id).unwrap();
+    let mut  count: usize = 0;
+    loop {
+        count += 1;
+        if bubble.parents.len() == 0{
+            break
+        }
+        let parent = bubble.parents.iter().next().unwrap().clone();
+        bubble = h.id2bubble.get(&parent).unwrap();
+    }
+     return count
 }
