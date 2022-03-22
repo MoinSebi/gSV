@@ -65,23 +65,33 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
 
 
 #[cfg(test)]
-mod tests {
+mod bifurcation_test {
     use gfaR_wrapper::NGfa;
+    use log::trace;
     use crate::bifurcation::algo::{bifurcation_wrapper};
     use crate::{algo_panSV, CountNode, create_bubbles, graph2pos, indel_detection};
     use crate::panSV::algo::sort_trav;
 
-    #[test]
-    fn pairs() {
+    fn loadthegraph() -> NGfa{
         let mut graph = NGfa::new();
         graph.from_graph("example_data/testGraph.gfa");
+        return graph
+    }
+
+    #[test]
+    fn test_run() {
+        let graph = loadthegraph();
         let h = bifurcation_wrapper(&graph, &2);
         let g2p = graph2pos(&graph);
-        eprintln!("hello123124213a");
         let j = sort_trav(h);
         let o = create_bubbles(& j, & graph.paths, &g2p);
-        eprintln!("hello123124213a {:?}", o.id2bubble);
+        trace!("{:?}", o.id2bubble);
 
+    }
+
+    #[test]
+    fn test_normal(){
+        let graph = loadthegraph();
         let mut counts: CountNode = CountNode::new();
         counts.counting_graph(&graph);
         let (o,_m) = algo_panSV(&graph.paths, &counts);
@@ -89,9 +99,7 @@ mod tests {
         let mut gg = create_bubbles(&o, &graph.paths, &h);
         let interval_numb = gg.id2interval.len() as u32;
         indel_detection(& mut gg, &graph.paths, interval_numb);
-
-        eprintln!("hello123124213a {:?}", gg.id2bubble);
-
+        trace!("{:?}", gg.id2bubble);
 
     }
 }

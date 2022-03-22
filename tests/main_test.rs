@@ -35,7 +35,7 @@ fn bifurcation_simple() -> Result<(), Box<dyn std::error::Error>> {
         .arg("-b");
 
     cmd.assert().success();
-    //fs::remove_file("example_data/test3.bubble.stats")?;
+    fs::remove_file("example_data/test3.bubble.txt")?;
     //fs::remove_file("example_data/test3.bubble.txt")?;
     //fs::remove_file("example_data/test3.traversal.bed")?;
 
