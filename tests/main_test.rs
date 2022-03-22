@@ -1,6 +1,6 @@
-use std::env;
+
 use assert_cmd::prelude::*; // Add methods on commands
-use predicates::prelude::*; // Used for writing assertions
+//use predicates::prelude::*; // Used for writing assertions
 use std::process::Command;
 use std::fs;
 
@@ -23,7 +23,7 @@ fn yeet() -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-
+#[test]
 fn bifurcation_simple() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("gSV")?;
     cmd

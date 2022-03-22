@@ -7,7 +7,7 @@ mod bifurcation;
 
 use std::collections::HashMap;
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest_wrapper, sort_trav, nest_version2};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, sort_trav, nest_version2};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
