@@ -7,7 +7,7 @@ mod bifurcation;
 
 use std::collections::HashMap;
 use crate::core::counting::{CountNode};
-use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest_wrapper, sort_trav};
+use crate::panSV::algo::{algo_panSV, create_bubbles, indel_detection, check_bubble_size, nest_wrapper, sort_trav, nest_version2};
 use crate::core::graph_helper::graph2pos;
 use clap::{Arg, App, AppSettings};
 use std::path::Path;
@@ -149,9 +149,9 @@ fn main() {
     info!("Running gSV");
     let threads= matches.value_of("threads").unwrap().parse().unwrap();
 
-
     let mut g1 = "not_relevant";
     if matches.is_present("gfa") {
+
         if Path::new(matches.value_of("gfa").unwrap()).exists() {
             g1 = matches.value_of("gfa").unwrap();
         } else {
@@ -213,7 +213,7 @@ fn main() {
 
     if matches.is_present("Nestedness"){
         info!("Nestedness");
-        nest_wrapper(& mut gg);
+        nest_version2(& mut gg);
     }
 
     let mut jj = OldNaming::new();
@@ -250,63 +250,3 @@ fn main() {
 
 }
 
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::core::writer::writing_bed_traversals;
-    use crate::panSV::algo::{check_bubble_size, nest_wrapper, check_nest};
-
-    #[test]
-    fn counting() {
-        let mut graph: NGfa = NGfa::new();
-        graph.from_graph("example_data/testGraph.gfa");
-        let mut counts: CountNode = CountNode::new();
-        counts.counting_graph(&graph);
-        assert_eq!(counts.ncount.len(), 9);
-        assert_eq!(counts.ncount.contains_key(&1), true);
-
-    }
-
-    #[test]
-    fn detection() {
-        let mut graph: NGfa = NGfa::new();
-        graph.from_graph("example_data/testGraph.gfa");
-        let mut counts: CountNode = CountNode::new();
-        counts.counting_graph(&graph);
-        let (o,_m) = algo_panSV(&graph.paths, &counts);
-        let h = graph2pos(&graph);
-        let mut gg = create_bubbles(&o, &graph.paths, &h);
-        let interval_numb = gg.id2interval.len() as u32;
-        indel_detection(& mut gg, &graph.paths, interval_numb);
-        println!("djaskdjakjdkasjsdsa");
-        check_bubble_size(&mut gg);
-        nest_wrapper(& mut gg);
-        check_nest(& mut gg);
-        bubble_naming_new(&gg.id2bubble, "example_data/panSV_test2");
-
-    }
-
-    #[test]
-    fn writing() {
-        let mut graph: NGfa = NGfa::new();
-
-        graph.from_graph("example_data/testGraph.gfa");
-        let mut counts: CountNode = CountNode::new();
-        counts.counting_graph(&graph);
-        let (o,_m) = algo_panSV(&graph.paths, &counts);
-        let h = graph2pos(&graph);
-        let mut gg = create_bubbles(&o, &graph.paths, &h);
-        let interval_numb = gg.id2interval.len() as u32;
-        indel_detection(& mut gg, &graph.paths, interval_numb);
-        bubble_naming_new(&gg.id2bubble, "example_data/panSV_test");
-        bubble_parent_structure(&gg.id2bubble, "example_data/panSV_test");
-        writing_traversals(&gg, "example_data/panSV_test");
-        writing_uniques_bed(&gg, &h, "example_data/panSV_test" , 50);
-        writing_bed(& gg, &h, "example_data/panSV_test");
-        writing_bed_traversals(&gg, &h, "example_data/panSV_test");
-    }
-
-
-}
