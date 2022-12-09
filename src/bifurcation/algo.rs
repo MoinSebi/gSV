@@ -14,8 +14,10 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
 
     let result = iterate_test(graph, threads.clone()) ;
 
+    // Output: Vec((String, String), {(usize,usize) -> Vec<(usize, usize)}, Option
     let mut result_temp = HashMap::new();
 
+    // Input -> String -> Start, Stop
     info!("Sorting and merging results");
     for x in result.iter(){
         let mut v1 = Vec::new();
@@ -31,6 +33,8 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         result_temp.entry(&x.0.1).or_insert(v2.clone()).extend(v2.clone());
 
     }
+
+    // Vector -> HashSet(This can be done faster)
     let mut result_merge = HashMap::new();
     for (key, val) in result_temp.iter(){
         let mut j = HashSet::new();
@@ -42,6 +46,7 @@ pub fn bifurcation_wrapper(graph: &NGfa, threads: &usize) -> HashMap<String, Vec
         result_merge.insert(key.to_owned().clone(), j);
     }
 
+    // Pan_Pos -> (string, start, stop);
     let mut result_panpos = HashMap::new();
     for (key, val) in result_merge.iter(){
         let mut j = Vec::new();
